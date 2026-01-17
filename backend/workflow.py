@@ -17,28 +17,19 @@ def create_graph():
     workflow.add_node("care_manager", run_synthesizer_agent)
 
     # 3. Define the Flow (The Orchestration Logic)
+    # Pattern: Entry Point -> [Intake Agent & Wealth Agent] -> Care Manager -> END
     
-    # PARALLEL EXECUTION: Both agents start immediately after user input
-    workflow.set_entry_point("intake_specialist") 
-    workflow.add_edge("intake_specialist", "care_manager")
-    
-    # We cheat slightly to make them run in parallel in LangGraph:
-    # In a real async graph, we'd branch from start. 
-    # For simplicity here, we chain them but logically they are separate tasks.
-    # To truly parallelize in LangGraph, you map the entry point to multiple nodes.
-    
-    # BETTER PATTERN:
-    # Start -> [Intake, Wealth] -> Care Manager
-    
-    # Let's redefine to support true parallel execution if you want "The Flex":
+    # Set single entry point
     workflow.set_entry_point("intake_specialist")
-    workflow.set_entry_point("wealth_architect")
     
-    # Both feed into the Synthesizer
-    workflow.add_edge("intake_specialist", "care_manager")
+    # Intake agent routes to Wealth architect
+    # Both execute (LangGraph executes independent branches concurrently)
+    workflow.add_edge("intake_specialist", "wealth_architect")
+    
+    # Both agents feed into the Synthesizer (Care Manager)
     workflow.add_edge("wealth_architect", "care_manager")
     
-    # Synthesizer is the end
+    # Synthesizer produces final response
     workflow.add_edge("care_manager", END)
 
     # 4. Compile
