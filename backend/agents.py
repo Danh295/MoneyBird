@@ -7,6 +7,7 @@ from typing import Dict, Any
 
 from google import genai
 from google.genai import types
+from tools import perform_market_search
 
 from dotenv import load_dotenv
 
@@ -109,7 +110,7 @@ async def run_intake_agent(state: MindMoneyState):
         }
         
     except Exception as e:
-        print(f"❌ Intake Error: {e}")
+        print(f"Intake Error: {e}")
         return {
             "intake_profile": {"error": str(e)},
             "agent_log": [{"agent": "Intake Specialist", "thought": f"Error: {e}", "status": "failed"}]
@@ -152,19 +153,23 @@ Analyze the user's financial situation comprehensively:
   "collaboration_with_therapist": "Any mental health factors that impact financial decisions?"
 }"""
 
+# agents.py
+
+# ... (keep imports and Setup) ...
+
 async def run_financial_agent(state: MindMoneyState):
     settings = get_settings()
     client = get_gemini_client()
     
-    # Include psychological context from Intake Specialist
-    intake = state.get("intake_profile") or {}
-    emotions = intake.get("emotional_state", {})
+    # --- PARALLEL EXECUTION FIX ---
+    # We REMOVED 'intake_profile' here. 
+    # The Wealth Architect is now "Blind" to emotions. It only sees the raw user text.
+    # This ensures it doesn't crash waiting for the other agent.
     
     context = f"""
 USER MESSAGE: {state['user_input']}
-EMOTIONAL STATE: {emotions.get('primary_emotion', 'unknown')}
-PSYCHOLOGICAL FACTORS: {json.dumps(intake.get('financial_psychology', {}))}
 """
+    # Note: removed the "PSYCHOLOGICAL FACTORS" section from the context
     
     try:
         response = client.models.generate_content(
@@ -299,8 +304,12 @@ KEY VALIDATION: {intake.get('validation_hook', 'Your concerns matter.')}
         }
         
     except Exception as e:
-        print(f"❌ Synthesizer Error: {e}")
-        return {"final_response": "I'm here to support you. What would help most right now?"}
+      error_msg = f"SYSTEM ERROR: {e} | Please try again later."
+      print(f"❌ Synthesizer Error: {e}")
+      return {
+          "final_response": error_msg,
+          "agent_log": [{"agent": "Care Manager", "thought": f"Error: {e}", "status": "failed"}]
+      }
 
 # ============================================================================
 # AGENT 4: ACTION GENERATOR (Financial Planning Form & Action Steps)
@@ -429,3 +438,53 @@ CAREER SECURITY: {intake.get('identity_threats', {}).get('career_security', '?')
             "action_plan": {"error": str(e)},
             "agent_log": [{"agent": "Action Generator", "thought": f"Error: {e}", "status": "failed"}]
         }
+        
+        
+# ============================================================================
+# AGENT: MARKET RESEARCHER (The "Tavily" Agent)
+# ============================================================================
+RESEARCH_PROMPT = """You are a Financial Research Assistant. Your job is to find REAL-WORLD resources.
+Based on the user's input, generate a specific search query to find:
+1. Interest rates (e.g., "current mortgage rates Ontario")
+2. Financial products (e.g., "best balance transfer cards Canada")
+3. Local support (e.g., "rent bank Waterloo", "free credit counseling Toronto")
+
+Output ONLY the raw search query string. Nothing else."""
+
+async def run_research_agent(state: MindMoneyState):
+    settings = get_settings()
+    client = get_gemini_client()
+    
+    try:
+        # Step 1: Ask LLM what to search for
+        response = client.models.generate_content(
+            model=settings.model_name,
+            contents=f"SYSTEM: {RESEARCH_PROMPT}\nUSER MESSAGE: {state['user_input']}",
+        )
+        
+        if not response.text:
+            raise ValueError("No response from LLM for research query.")
+        else: query = response.text.strip()
+        
+        # Step 2: actually search the web
+        search_results = perform_market_search(query)
+        
+        log = {
+            "agent": "Market Researcher", 
+            "thought": f"Searched for: '{query}'", 
+            "status": "complete"
+        }
+        
+        # Return the results so the Care Manager can see them
+        return {
+            "market_data": search_results, 
+            "agent_log": [log]
+        }
+        
+    except Exception as e:
+        print(f"❌ Research Error: {e}")
+        return {
+            "market_data": "Search unavailable.",
+            "agent_log": [{"agent": "Market Researcher", "thought": f"Error: {e}", "status": "failed"}]
+        }
+        

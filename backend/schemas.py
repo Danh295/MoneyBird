@@ -1,30 +1,26 @@
-"""
-schemas.py - Fixed for Parallel Execution
-"""
+# schemas.py
 import operator
 from typing import TypedDict, Any, List, Dict, Annotated
 from pydantic import BaseModel
 
-# --- The "Brain" State (LangGraph) ---
 class MindMoneyState(TypedDict):
-    # Shared Data (Read-Only for agents)
+    # Shared Data
     user_input: str
     conversation_history: List[Dict[str, str]]
     
-    # Agent Outputs (Specific to each agent)
+    # Agent Outputs
     intake_profile: Dict[str, Any]
     financial_profile: Dict[str, Any]
+    market_data: str  # <--- NEW: Stores search results from Tavily
     
     # Final Results
     final_response: str
     action_plan: Dict[str, Any]
     
-    # LOGS: The Magic Fix
-    # Annotated[list, operator.add] means "Append, don't Overwrite"
-    # This allows multiple agents to write logs simultaneously without crashing.
+    # Logs (Append-only)
     agent_log: Annotated[List[Dict[str, Any]], operator.add]
 
-# --- API Request/Response (FastAPI) ---
+# (ChatRequest and ChatResponse classes remain the same)
 class ChatRequest(BaseModel):
     message: str
     history: List[Dict[str, str]] = [] 
@@ -33,4 +29,4 @@ class ChatRequest(BaseModel):
 class ChatResponse(BaseModel):
     response: str
     agent_logs: List[Dict[str, Any]]
-    action_plan: Dict[str, Any] = {}  # Optional action plan
+    action_plan: Dict[str, Any] = {}
