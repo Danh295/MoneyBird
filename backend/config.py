@@ -1,50 +1,37 @@
 """
-Configuration management for MindMoney backend.
+config.py - Google GenAI SDK Setup (Type Safe)
 """
-
-from pydantic_settings import BaseSettings
+import os
+from pydantic_settings import BaseSettings, SettingsConfigDict
 from functools import lru_cache
+from dotenv import load_dotenv
 
+load_dotenv()
 
 class Settings(BaseSettings):
-    """Application settings loaded from environment variables."""
+    # --- FIXED: Add a default value to silence Pylance ---
+    # Pydantic will still prioritize the .env file over this string.
+    gemini_api_key: str = "" 
     
-    # API Keys
-    google_api_key: str
-    anthropic_api_key: str
-    openai_api_key: str
+    model_name: str = "gemini-2.5-flash"
     
-    # Redis
+    intake_temperature: float = 0.3
+    planner_temperature: float = 0.1
+    synthesizer_temperature: float = 0.6
+    
+    debug: bool = True
+    cors_origins: str = "*"
+    
+    # Redis configuration
     redis_url: str = "redis://localhost:6379"
-    
-    # Supabase
-    supabase_url: str
-    supabase_key: str
-    
-    # Model configurations
-    gemini_model: str = "gemini-1.5-pro"
-    anthropic_model: str = "claude-3-5-sonnet-20241022"
-    openai_model: str = "gpt-4o-mini"
-    
-    # Temperature settings per agent
-    intake_temperature: float = 0.2
-    planner_temperature: float = 0.2
-    synthesizer_temperature: float = 0.4
-    
-    # App settings
-    debug: bool = False
-    cors_origins: str = "http://localhost:3000,http://127.0.0.1:3000"
-    
-    # State TTL in seconds
-    state_ttl: int = 3600
-    
-    class Config:
-        env_file = ".env"
-        env_file_encoding = "utf-8"
-        case_sensitive = False
+    state_ttl: int = 86400  # 24 hours in seconds
 
+    model_config = SettingsConfigDict(
+        env_file=".env", 
+        env_file_encoding="utf-8",
+        extra="ignore"
+    )
 
 @lru_cache()
 def get_settings() -> Settings:
-    """Get cached settings instance."""
     return Settings()
