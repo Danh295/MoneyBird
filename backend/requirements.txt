@@ -11,3 +11,6 @@ tavily-python>=0.1.0
 # Config & Utils
 pydantic-settings
 python-dotenv
+
+# Database
+supabase>=1.0.0
