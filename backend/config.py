@@ -25,6 +25,9 @@ class Settings(BaseSettings):
     redis_url: str = "redis://localhost:6379"
     state_ttl: int = 86400  # 24 hours in seconds
 
+    supabase_url: str = "https://czdisykcmzsycudwtstf.supabase.co"
+    supabase_key: str = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN6ZGlzeWtjbXpzeWN1ZHd0c3RmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg2MTk5NzIsImV4cCI6MjA4NDE5NTk3Mn0.4j25szbtQ2hEKY5b69rIjucSAesRxiq7o9U4pSjbEaU"
+
     model_config = SettingsConfigDict(
         env_file=".env", 
         env_file_encoding="utf-8",
