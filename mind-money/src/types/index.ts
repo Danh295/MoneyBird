@@ -7,7 +7,7 @@ export interface Message {
   content: string;
 }
 
-export type AgentName = 'Intake Specialist' | 'Wealth Architect' | 'Care Manager';
+export type AgentName = 'Intake Specialist' | 'Wealth Architect' | 'Care Manager' | 'Action Generator';
 
 export interface AgentLog {
   id: string;
