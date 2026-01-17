@@ -23,7 +23,7 @@ async def chat_endpoint(request: ChatRequest):
     print(f"📥 Received: {request.message}")
     
     try:
-        # Run the LangGraph Brain
+        # Run the LangGraph Brain (4-agent workflow)
         result_state = await run_mindmoney_workflow(
             user_input=request.message,
             history=request.history
@@ -31,7 +31,8 @@ async def chat_endpoint(request: ChatRequest):
         
         return ChatResponse(
             response=result_state["final_response"],
-            agent_logs=result_state["agent_log"]
+            agent_logs=result_state["agent_log"],
+            action_plan=result_state.get("action_plan", {})
         )
         
     except Exception as e:

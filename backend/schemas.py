@@ -15,8 +15,9 @@ class MindMoneyState(TypedDict):
     intake_profile: Dict[str, Any]
     financial_profile: Dict[str, Any]
     
-    # Final Result
+    # Final Results
     final_response: str
+    action_plan: Dict[str, Any]
     
     # LOGS: The Magic Fix
     # Annotated[list, operator.add] means "Append, don't Overwrite"
@@ -32,3 +33,4 @@ class ChatRequest(BaseModel):
 class ChatResponse(BaseModel):
     response: str
     agent_logs: List[Dict[str, Any]]
+    action_plan: Dict[str, Any] = {}  # Optional action plan
