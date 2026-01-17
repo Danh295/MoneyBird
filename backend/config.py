@@ -9,11 +9,10 @@ from dotenv import load_dotenv
 load_dotenv()
 
 class Settings(BaseSettings):
-    # --- FIXED: Add a default value to silence Pylance ---
-    # Pydantic will still prioritize the .env file over this string.
     gemini_api_key: str = "" 
+    tavily_api_key: str = ""
     
-    model_name: str = "gemini-2.5-flash"
+    model_name: str = "gemini-2.5-flash-lite"
     
     intake_temperature: float = 0.3
     planner_temperature: float = 0.1
