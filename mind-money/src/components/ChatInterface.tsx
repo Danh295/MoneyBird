@@ -6,37 +6,25 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import clsx from 'clsx';
 import { ActionPlanCard } from './ActionPlanCard';
-import { useFinancial } from '@/context/FinancialContext'; // Import context
-
-// Types
-type AgentLog = {
-  id: string;
-  agentName: string;
-  status: string;
-  thought: string;
-  output?: string;
-};
-
-type Message = {
-  id: string;
-  role: 'user' | 'assistant';
-  content: string;
-  actionPlan?: any;
-};
+import { useFinancial } from '@/context/FinancialContext'; 
+import { useChat } from '@/context/ChatContext'; // <--- USE GLOBAL CONTEXT
 
 export default function ChatInterface() {
-  const { addActionPlan } = useFinancial(); // Connection to the Dashboard
+  const { addActionPlan } = useFinancial();
+  
+  // USE GLOBAL STATE (Fixes the reset bug)
+  const { 
+    messages, 
+    addMessage, 
+    agentLogs, 
+    setAgentLogs, 
+    isThinking, 
+    setIsThinking, 
+    sessionId // <--- The persistent ID
+  } = useChat();
+
   const [input, setInput] = useState('');
-  const [messages, setMessages] = useState<Message[]>([
-    { 
-      id: '1', 
-      role: 'assistant', 
-      content: 'Hello. I am MindMoney. I am here to optimize your financial life. How can I help you today?' 
-    }
-  ]);
-  const [isThinking, setIsThinking] = useState(false);
   const [showAgentPanel, setShowAgentPanel] = useState(false);
-  const [agentLogs, setAgentLogs] = useState<AgentLog[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -50,22 +38,22 @@ export default function ChatInterface() {
   const handleSend = async () => {
     if (!input.trim()) return;
 
-    // 1. Add User Message
-    const userMsg: Message = { id: Date.now().toString(), role: 'user', content: input };
-    setMessages(prev => [...prev, userMsg]);
+    // 1. Add User Message to Context
+    const userMsg = { id: Date.now().toString(), role: 'user' as const, content: input };
+    addMessage(userMsg);
     setInput('');
     setIsThinking(true);
     setAgentLogs([]); 
 
     try {
-      // 2. Call the API
+      // 2. Call API with Persistent Session ID
       const res = await fetch('http://127.0.0.1:8000/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          message: input.trim(),
+          message: userMsg.content,
           history: messages.map(m => ({ role: m.role, content: m.content })),
-          session_id: 'chat-session'
+          session_id: sessionId // <--- CRITICAL: Sends the correct ID to Supabase
         })
       });
 
@@ -86,33 +74,34 @@ export default function ChatInterface() {
         });
       }
 
-      // 4. Final Response + Context Update
+      // 4. Final Response
       const delay = (data.agent_logs?.length || 0) * 400 + 500;
       
       setTimeout(() => {
         setIsThinking(false);
         
-        // CRITICAL: Save to Global Context (The Dashboard)
+        // Save Action Plan to Dashboard
         if (data.action_plan && Object.keys(data.action_plan).length > 0) {
             addActionPlan(data.action_plan);
         }
 
-        setMessages(prev => [...prev, {
+        // Add Assistant Message to Context
+        addMessage({
           id: Date.now().toString(),
           role: 'assistant',
           content: data.response,
           actionPlan: data.action_plan
-        }]);
+        });
       }, delay);
 
     } catch (err) {
       console.error(err);
       setIsThinking(false);
-      setMessages(prev => [...prev, {
+      addMessage({
         id: Date.now().toString(),
         role: 'assistant',
-        content: "I'm having trouble connecting to the financial brain. Please check the backend connection."
-      }]);
+        content: "⚠️ I'm having trouble reaching the brain. Ensure the backend is running on port 8000."
+      });
     }
   };
 
@@ -123,7 +112,7 @@ export default function ChatInterface() {
       <div className="flex-1 flex flex-col max-w-5xl mx-auto w-full bg-white shadow-xl h-full relative">
         
         {/* Header */}
-        <header className="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-white z-10">
+        <header className="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-white z-10 pt-20">
           <div className="flex items-center gap-3">
             <div className="bg-indigo-600 p-2 rounded-lg">
               <Sparkles className="text-white w-5 h-5" />
@@ -221,7 +210,7 @@ export default function ChatInterface() {
         "fixed inset-y-0 right-0 w-80 bg-slate-900 shadow-2xl transform transition-transform duration-300 ease-in-out border-l border-slate-800 z-50",
         showAgentPanel ? "translate-x-0" : "translate-x-full"
       )}>
-        <div className="p-4 border-b border-slate-800 bg-slate-950 flex justify-between items-center">
+        <div className="p-4 border-b border-slate-800 bg-slate-950 flex justify-between items-center pt-20">
           <h3 className="text-indigo-400 font-mono text-xs font-bold uppercase tracking-wider">
             Orchestration Log
           </h3>
@@ -230,7 +219,7 @@ export default function ChatInterface() {
           </button>
         </div>
         
-        <div className="p-4 space-y-3 overflow-y-auto h-[calc(100vh-60px)]">
+        <div className="p-4 space-y-3 overflow-y-auto h-[calc(100vh-100px)]">
           {agentLogs.map((log, i) => (
             <div key={i} className="bg-slate-800/50 rounded-lg p-3 border border-slate-700/50 text-xs animate-in fade-in slide-in-from-right-8">
               <div className="flex items-center gap-2 mb-2">

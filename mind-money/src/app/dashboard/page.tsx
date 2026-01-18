@@ -3,13 +3,14 @@
 import React, { useState } from 'react';
 import { useFinancial } from '@/context/FinancialContext';
 import { ActionItem } from '@/components/ActionItem';
-import { PieChart, ListTodo, Save, Loader2 } from 'lucide-react';
+import { PieChart, ListTodo, Save, Loader2, ArrowLeft } from 'lucide-react';
+import Link from 'next/link';
 
 export default function DashboardPage() {
   const { actions, toggleAction, financialFormSchema } = useFinancial();
   const [activeTab, setActiveTab] = useState<'overview' | 'form'>('overview');
 
-  // Sort: Uncompleted High Priority first, then others, then completed at bottom
+  // Sort: Uncompleted High Priority first
   const sortedActions = [...actions].sort((a, b) => {
     if (a.isCompleted === b.isCompleted) return b.priorityScore - a.priorityScore;
     return a.isCompleted ? 1 : -1;
@@ -19,39 +20,45 @@ export default function DashboardPage() {
   const progress = actions.length > 0 ? (completedCount / actions.length) * 100 : 0;
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col">
+    <div className="min-h-screen bg-slate-50 flex flex-col pt-20"> {/* Added pt-20 for navbar */}
       {/* Dashboard Header */}
       <div className="bg-white border-b border-slate-200 px-8 py-6">
-        <div className="max-w-6xl mx-auto flex justify-between items-center">
-          <div>
-            <h1 className="text-2xl font-bold text-slate-800">Financial Command Center</h1>
-            <p className="text-slate-500 text-sm">Track your progress and update your profile</p>
-          </div>
+        <div className="max-w-6xl mx-auto">
           
-          <div className="flex gap-2">
-            <button 
-              onClick={() => setActiveTab('overview')}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${activeTab === 'overview' ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-600'}`}
-            >
-              <ListTodo size={16} /> Action Plan
-            </button>
-            <button 
-              onClick={() => setActiveTab('form')}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${activeTab === 'form' ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-600'}`}
-            >
-              <PieChart size={16} /> Financial Profile
-            </button>
+          <Link href="/" className="inline-flex items-center gap-2 text-slate-500 hover:text-indigo-600 mb-4 transition-colors text-sm font-medium">
+            <ArrowLeft size={16} />
+            Back to Conversation
+          </Link>
+
+          <div className="flex justify-between items-center">
+            <div>
+              <h1 className="text-2xl font-bold text-slate-800">Financial Command Center</h1>
+              <p className="text-slate-500 text-sm">Track your progress and update your profile</p>
+            </div>
+            
+            <div className="flex gap-2">
+              <button 
+                onClick={() => setActiveTab('overview')}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${activeTab === 'overview' ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-600'}`}
+              >
+                <ListTodo size={16} /> Action Plan
+              </button>
+              <button 
+                onClick={() => setActiveTab('form')}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${activeTab === 'form' ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-600'}`}
+              >
+                <PieChart size={16} /> Financial Profile
+              </button>
+            </div>
           </div>
         </div>
       </div>
 
       <div className="flex-1 p-8 overflow-y-auto">
+        {/* ... (Rest of the file remains the same as your previous version) ... */}
         <div className="max-w-6xl mx-auto">
-          
-          {/* TAB 1: ACTION CENTER */}
           {activeTab === 'overview' && (
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-              {/* Left Column: Progress & Stats */}
               <div className="space-y-6">
                 <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
                   <h3 className="font-bold text-slate-700 mb-4">Completion Status</h3>
@@ -78,7 +85,6 @@ export default function DashboardPage() {
                 </div>
               </div>
 
-              {/* Right Column: The Action List */}
               <div className="lg:col-span-2 space-y-4">
                  <h2 className="text-lg font-bold text-slate-800 mb-4">Priority Actions</h2>
                  {sortedActions.length === 0 ? (
@@ -94,7 +100,6 @@ export default function DashboardPage() {
             </div>
           )}
 
-          {/* TAB 2: DYNAMIC FINANCIAL FORM */}
           {activeTab === 'form' && (
             <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-8 max-w-3xl mx-auto animate-in fade-in slide-in-from-bottom-4">
               {!financialFormSchema ? (
@@ -109,11 +114,9 @@ export default function DashboardPage() {
                     <h2 className="text-2xl font-bold text-slate-800">{financialFormSchema.title}</h2>
                     <p className="text-slate-500">{financialFormSchema.description}</p>
                   </div>
-
-                  {/* Dynamically Render Sections */}
+                  {/* ... (Keep your existing dynamic form mapping here) ... */}
                   {Object.entries(financialFormSchema).map(([key, section]: [string, any]) => {
                     if (key === 'title' || key === 'description') return null;
-                    
                     return (
                       <div key={key} className="space-y-4">
                         <h3 className="text-lg font-bold text-indigo-900 border-l-4 border-indigo-500 pl-3">
@@ -125,7 +128,6 @@ export default function DashboardPage() {
                               <label className="block text-sm font-medium text-slate-700 mb-1">
                                 {field.label} {field.required && <span className="text-rose-500">*</span>}
                               </label>
-                              
                               {field.type === 'select' ? (
                                 <select className="w-full p-3 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none transition">
                                   {field.options.map((opt: string) => <option key={opt}>{opt}</option>)}
@@ -146,7 +148,6 @@ export default function DashboardPage() {
                       </div>
                     );
                   })}
-
                   <div className="pt-6 border-t border-slate-100">
                     <button type="button" className="w-full py-4 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl flex items-center justify-center gap-2 transition-all shadow-lg hover:shadow-indigo-200">
                       <Save size={20} />
