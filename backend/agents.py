@@ -115,7 +115,7 @@ async def run_intake_agent(state: MindMoneyState):
         }
         
     except Exception as e:
-        print(f"❌ Intake Error: {e}")
+        print(f"Intake Error: {e}")
         return {
             "intake_profile": {"intent": "GREETING", "error": str(e)},
             "agent_log": [{"agent": "Intake Specialist", "thought": f"Error: {e}", "status": "failed"}]
@@ -212,7 +212,7 @@ async def run_financial_agent(state: MindMoneyState):
             "agent_log": [{"agent": "Wealth Architect", "thought": f"Health Score: {health_score}/100 | {challenges} challenges identified", "status": "complete"}]
         }
     except Exception as e:
-        print(f"❌ Wealth Error: {e}")
+        print(f"Wealth Error: {e}")
         return {
             "financial_profile": {"error": str(e)},
             "agent_log": [{"agent": "Wealth Architect", "thought": f"Error: {e}", "status": "failed"}]
@@ -419,7 +419,7 @@ async def run_synthesizer_agent(state: MindMoneyState):
         }
         
     except Exception as e:
-        print(f"❌ Synthesizer Error: {e}")
+        print(f"Synthesizer Error: {e}")
         return {
             "final_response": "I'm here to help with your finances. Could you share what's on your mind?",
             "agent_log": [{"agent": "Care Manager", "thought": f"Error: {e}", "status": "failed"}]
@@ -503,7 +503,7 @@ OPPORTUNITIES:
         }
         
     except Exception as e:
-        print(f"❌ Action Generator Error: {e}")
+        print(f"Action Generator Error: {e}")
         return {
             "action_plan": None,
             "agent_log": [{"agent": "Action Generator", "thought": f"Error: {e}", "status": "failed"}]
@@ -559,7 +559,7 @@ async def run_research_agent(state: MindMoneyState):
             "agent_log": [{"agent": "Market Researcher", "thought": "Search tools not configured", "status": "idle"}]
         }
     except Exception as e:
-        print(f"❌ Research Error: {e}")
+        print(f"Research Error: {e}")
         return {
             "market_data": "",
             "agent_log": [{"agent": "Market Researcher", "thought": f"Error: {e}", "status": "failed"}]

@@ -54,14 +54,14 @@ async def get_history(session_id: str):
             
         return {"history": formatted_history}
     except Exception as e:
-        print(f"❌ History Error: {e}")
+        print(f"History Error: {e}")
         return {"history": []}
 
 # --- 3. CHAT ENDPOINT (Fixed User Tracking) ---
 @app.post("/api/chat", response_model=ChatResponse)
 async def chat_endpoint(request: ChatRequest):
     # Debug print to confirm user_id is arriving
-    print(f"📥 Received: {request.message} (Session: {request.session_id}) User: {request.user_id}")
+    print(f"Received: {request.message} (Session: {request.session_id}) User: {request.user_id}")
     
     try:
         logger = get_supabase_logger()
@@ -90,7 +90,7 @@ async def chat_endpoint(request: ChatRequest):
             assistant_response=result_state["final_response"],
             state_snapshot=result_state,
             agent_logs=logs,
-            user_id=request.user_id  # <--- PASSING THE USER ID
+            user_id=request.user_id 
         )
         
         return ChatResponse(
@@ -100,7 +100,7 @@ async def chat_endpoint(request: ChatRequest):
         )
         
     except Exception as e:
-        print(f"❌ Chat Error: {e}")
+        print(f"Chat Error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 if __name__ == "__main__":

@@ -22,7 +22,7 @@ async def run_parallel_analysis(state: MindMoneyState):
     Runs Wealth Architect and Market Researcher in parallel.
     Only called when intent is DATA_SUBMISSION.
     """
-    print("🔄 Running parallel financial analysis...")
+    print("Running parallel financial analysis...")
     
     # Run both agents concurrently
     wealth_result, research_result = await asyncio.gather(
@@ -47,7 +47,7 @@ def route_after_intake(state: MindMoneyState) -> Literal["analyze", "converse"]:
     """
     intent = state.get("intake_profile", {}).get("intent", "GREETING")
     
-    print(f"🔀 ROUTER: Intent = '{intent}'")
+    print(f"ROUTER: Intent = '{intent}'")
 
     if intent == "DATA_SUBMISSION":
         print("   → Taking ANALYSIS path (Wealth + Research)")
@@ -118,8 +118,8 @@ async def run_mindmoney_workflow(user_input: str, history: list) -> MindMoneySta
         Final state with all agent outputs
     """
     print(f"\n{'='*60}")
-    print(f"🧠 MINDMONEY WORKFLOW START")
-    print(f"📝 Input: {user_input[:100]}...")
+    print(f"MINDMONEY WORKFLOW START")
+    print(f"Input: {user_input[:100]}...")
     print(f"{'='*60}\n")
     
     initial_state: MindMoneyState = {
@@ -137,7 +137,7 @@ async def run_mindmoney_workflow(user_input: str, history: list) -> MindMoneySta
         final_state = await app_graph.ainvoke(initial_state)
         
         print(f"\n{'='*60}")
-        print(f"✅ WORKFLOW COMPLETE")
+        print(f"WORKFLOW COMPLETE")
         print(f"   Agents run: {len(final_state.get('agent_log', []))}")
         print(f"   Response length: {len(final_state.get('final_response', ''))}")
         print(f"{'='*60}\n")
@@ -145,7 +145,7 @@ async def run_mindmoney_workflow(user_input: str, history: list) -> MindMoneySta
         return final_state
         
     except Exception as e:
-        print(f"❌ Workflow error: {e}")
+        print(f"Workflow error: {e}")
         # Return a safe fallback state
         return {
             **initial_state,

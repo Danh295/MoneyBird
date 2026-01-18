@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import Link from 'next/link'; // Import Link
+import Link from 'next/link';
 import { CheckCircle2, Target, Clock, AlertCircle, ArrowRight, LayoutDashboard } from 'lucide-react';
 import clsx from 'clsx';
 

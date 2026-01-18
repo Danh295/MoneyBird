@@ -121,14 +121,12 @@ export default function ChatInterface() {
 
       const data = await res.json();
 
-      // --- FIX 2: Ensure logs are parsed correctly ---
       if (data.agent_logs && Array.isArray(data.agent_logs)) {
-        // Animate logs in
         data.agent_logs.forEach((log: any, index: number) => {
           setTimeout(() => {
             setAgentLogs(prev => [...prev, {
               id: `log-${index}`,
-              agentName: log.agent || log.agentName, // Handle both naming conventions
+              agentName: log.agent || log.agentName,
               status: log.status || 'success',
               thought: log.thought,
               output: log.output
@@ -141,7 +139,7 @@ export default function ChatInterface() {
       
       setTimeout(() => {
         setIsThinking(false);
-        setIsMascotTalking(false); // Close mouth after response is complete
+        setIsMascotTalking(false);
         if (data.action_plan && Object.keys(data.action_plan).length > 0) {
             addActionPlan(data.action_plan);
         }
@@ -155,7 +153,7 @@ export default function ChatInterface() {
     } catch (err) {
       console.error(err);
       setIsThinking(false);
-      setIsMascotTalking(false); // Close mouth on error
+      setIsMascotTalking(false);
       addMessage({ id: Date.now().toString(), role: 'assistant', content: "⚠️ I'm having trouble reaching the brain. Ensure the backend is running on port 8000." });
     }
   };

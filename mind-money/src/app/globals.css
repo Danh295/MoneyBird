@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 :root {
-  /* 1. DEFINE YOUR WARM THEME VARIABLES */
+  /* 1. DEFINE THEME VARIABLES */
   --background: #fffbf5;   /* Warm Cream */
   --surface: #ffffff;      /* White */
   --foreground: #4a3f35;   /* Dark Brown */
@@ -43,7 +43,7 @@
   --shadow-lg: 0 10px 15px -3px rgba(255, 140, 66, 0.1), 0 4px 6px -4px rgba(255, 140, 66, 0.05);
 }
 
-/* 2. MAP VARIABLES TO TAILWIND UTILITIES (Optional but helpful) */
+/* 2. MAP VARIABLES TO TAILWIND UTILITIES */
 @theme {
   --color-primary: var(--primary);
   --color-primary-dark: var(--primary-dark);

@@ -187,10 +187,6 @@ class SupabaseService:
             if user_id:
                 query = query.eq("user_id", user_id)
             else:
-                # If no user_id is passed (Guest), do NOT return database sessions 
-                # (Privacy: Guests shouldn't see random sessions)
-                # You might want to remove this 'else' if you want a global public feed, 
-                # but for this app, guests rely on local storage.
                 pass 
             
             result = query.execute()

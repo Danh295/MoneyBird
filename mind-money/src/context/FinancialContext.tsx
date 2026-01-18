@@ -26,7 +26,7 @@ export function FinancialProvider({ children }: { children: React.ReactNode }) {
   const [actions, setActions] = useState<ActionItem[]>([]);
   const [financialFormSchema, setFinancialFormSchema] = useState<any>(null);
 
-  // Load from local storage on mount (Persistence)
+
   useEffect(() => {
     const saved = localStorage.getItem('moneybird_actions');
     if (saved) setActions(JSON.parse(saved));

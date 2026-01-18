@@ -75,7 +75,7 @@ export default function OurStoryPage() {
           {/* Story Section */}
           <div className="bg-white rounded-2xl border border-[var(--border)] shadow-lg p-8">
             <h3 className="text-xl font-bold text-[var(--text-primary)] mb-4 flex items-center gap-2">
-              <span className="text-2xl">✨</span>
+              <span className="text-2xl"></span>
               About Our Team
             </h3>
             

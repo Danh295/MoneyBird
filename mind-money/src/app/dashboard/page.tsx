@@ -6,7 +6,7 @@ import { ActionItem } from '@/components/ActionItem';
 import { PieChart, ListTodo, Save, Loader2, ArrowLeft, Target, Sparkles, LogIn, LogOut, Users, DollarSign, CreditCard, Wallet, TrendingUp } from 'lucide-react';
 import Link from 'next/link';
 import clsx from 'clsx';
-import { useAuth } from '@/context/AuthContext'; // Note: singular context
+import { useAuth } from '@/context/AuthContext';
 import AuthModal from '@/components/AuthModal';
 
 export default function DashboardPage() {
