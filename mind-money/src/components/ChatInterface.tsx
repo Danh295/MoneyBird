@@ -25,9 +25,17 @@ type Message = {
   actionPlan?: any;
 };
 
+type ChatSession = {
+  session_id: string;
+  preview: string;
+  last_message_at: string;
+  created_at: string;
+};
+
 export default function ChatInterface() {
   const { addActionPlan } = useFinancial(); // Connection to the Dashboard
   const router = useRouter();
+  const [sessionId, setSessionId] = useState(`session-${Date.now()}`);
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState<Message[]>([
     { 
@@ -40,6 +48,8 @@ export default function ChatInterface() {
   const [showAgentPanel, setShowAgentPanel] = useState(false);
   const [showHistoryPanel, setShowHistoryPanel] = useState(false);
   const [agentLogs, setAgentLogs] = useState<AgentLog[]>([]);
+  const [chatSessions, setChatSessions] = useState<ChatSession[]>([]);
+  const [isLoadingSessions, setIsLoadingSessions] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -49,6 +59,53 @@ export default function ChatInterface() {
   useEffect(() => {
     scrollToBottom();
   }, [messages, agentLogs]);
+
+  // Fetch chat sessions when history panel is opened
+  useEffect(() => {
+    if (showHistoryPanel && chatSessions.length === 0) {
+      fetchChatSessions();
+    }
+  }, [showHistoryPanel]);
+
+  const fetchChatSessions = async () => {
+    setIsLoadingSessions(true);
+    try {
+      const res = await fetch('http://127.0.0.1:8000/api/sessions');
+      const data = await res.json();
+      setChatSessions(data.sessions || []);
+    } catch (err) {
+      console.error('Failed to fetch sessions:', err);
+    } finally {
+      setIsLoadingSessions(false);
+    }
+  };
+
+  const loadChatHistory = async (selectedSessionId: string) => {
+    try {
+      const res = await fetch(`http://127.0.0.1:8000/api/history/${selectedSessionId}`);
+      const data = await res.json();
+      
+      if (data.history && data.history.length > 0) {
+        setMessages(data.history);
+        setSessionId(selectedSessionId);
+        setShowHistoryPanel(false);
+      }
+    } catch (err) {
+      console.error('Failed to load chat history:', err);
+    }
+  };
+
+  const startNewChat = () => {
+    setMessages([
+      { 
+        id: '1', 
+        role: 'assistant', 
+        content: 'Hello. I am MindMoney. I am here to optimize your financial life. How can I help you today?' 
+      }
+    ]);
+    setSessionId(`session-${Date.now()}`);
+    setShowHistoryPanel(false);
+  };
 
   const handleSend = async () => {
     if (!input.trim()) return;
@@ -68,7 +125,7 @@ export default function ChatInterface() {
         body: JSON.stringify({
           message: input.trim(),
           history: messages.map(m => ({ role: m.role, content: m.content })),
-          session_id: 'chat-session'
+          session_id: sessionId
         })
       });
 
@@ -248,58 +305,66 @@ export default function ChatInterface() {
           </button>
         </div>
         
-        <div className="p-4 space-y-3 overflow-y-auto h-[calc(100vh-60px)]">
-          {/* Hardcoded chat sessions for now - TODO: Make dynamic */}
-          <div className="bg-slate-50 rounded-lg p-3 border border-slate-200 hover:bg-slate-100 cursor-pointer transition-colors">
-            <div className="flex items-center gap-2 mb-1">
-              <div className="w-2 h-2 rounded-full bg-emerald-500" />
-              <span className="font-semibold text-sm text-slate-800">Today</span>
-            </div>
-            <p className="text-xs text-slate-600 line-clamp-2">
-              Debt payoff strategy with travel savings
-            </p>
-            <span className="text-[10px] text-slate-400 mt-1 block">2 hours ago</span>
-          </div>
+        <div className="p-4 space-y-3 overflow-y-auto h-[calc(100vh-120px)]">
+          {/* New Chat Button */}
+          <button
+            onClick={startNewChat}
+            className="w-full bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg p-3 text-sm font-medium transition-colors flex items-center justify-center gap-2"
+          >
+            <Sparkles size={16} />
+            Start New Chat
+          </button>
 
-          <div className="bg-slate-50 rounded-lg p-3 border border-slate-200 hover:bg-slate-100 cursor-pointer transition-colors">
-            <div className="flex items-center gap-2 mb-1">
-              <span className="font-semibold text-sm text-slate-800">Yesterday</span>
+          {/* Loading State */}
+          {isLoadingSessions && (
+            <div className="text-center text-slate-400 text-sm py-4">
+              Loading sessions...
             </div>
-            <p className="text-xs text-slate-600 line-clamp-2">
-              Investment portfolio rebalancing advice
-            </p>
-            <span className="text-[10px] text-slate-400 mt-1 block">Jan 16, 2026</span>
-          </div>
+          )}
 
-          <div className="bg-slate-50 rounded-lg p-3 border border-slate-200 hover:bg-slate-100 cursor-pointer transition-colors">
-            <div className="flex items-center gap-2 mb-1">
-              <span className="font-semibold text-sm text-slate-800">Last Week</span>
+          {/* Chat Sessions */}
+          {!isLoadingSessions && chatSessions.length === 0 && (
+            <div className="text-center text-slate-400 text-xs mt-10">
+              No chat history yet.<br/>Start a conversation to see it here.
             </div>
-            <p className="text-xs text-slate-600 line-clamp-2">
-              Emergency fund setup and budgeting
-            </p>
-            <span className="text-[10px] text-slate-400 mt-1 block">Jan 10, 2026</span>
-          </div>
+          )}
 
-          <div className="bg-slate-50 rounded-lg p-3 border border-slate-200 hover:bg-slate-100 cursor-pointer transition-colors">
-            <div className="flex items-center gap-2 mb-1">
-              <span className="font-semibold text-sm text-slate-800">Jan 5, 2026</span>
-            </div>
-            <p className="text-xs text-slate-600 line-clamp-2">
-              Tax optimization strategies for 2026
-            </p>
-            <span className="text-[10px] text-slate-400 mt-1 block">12 days ago</span>
-          </div>
+          {chatSessions.map((session, index) => {
+            const date = new Date(session.last_message_at);
+            const isToday = date.toDateString() === new Date().toDateString();
+            const isYesterday = date.toDateString() === new Date(Date.now() - 86400000).toDateString();
+            
+            let timeLabel = '';
+            if (isToday) {
+              timeLabel = 'Today';
+            } else if (isYesterday) {
+              timeLabel = 'Yesterday';
+            } else {
+              timeLabel = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            }
 
-          <div className="bg-slate-50 rounded-lg p-3 border border-slate-200 hover:bg-slate-100 cursor-pointer transition-colors">
-            <div className="flex items-center gap-2 mb-1">
-              <span className="font-semibold text-sm text-slate-800">Dec 2025</span>
-            </div>
-            <p className="text-xs text-slate-600 line-clamp-2">
-              Retirement planning and 401k review
-            </p>
-            <span className="text-[10px] text-slate-400 mt-1 block">3 weeks ago</span>
-          </div>
+            return (
+              <div
+                key={session.session_id}
+                onClick={() => loadChatHistory(session.session_id)}
+                className={clsx(
+                  "bg-slate-50 rounded-lg p-3 border border-slate-200 hover:bg-slate-100 cursor-pointer transition-colors",
+                  session.session_id === sessionId && "bg-indigo-50 border-indigo-300"
+                )}
+              >
+                <div className="flex items-center gap-2 mb-1">
+                  {index === 0 && <div className="w-2 h-2 rounded-full bg-emerald-500" />}
+                  <span className="font-semibold text-sm text-slate-800">{timeLabel}</span>
+                </div>
+                <p className="text-xs text-slate-600 line-clamp-2">
+                  {session.preview}
+                </p>
+                <span className="text-[10px] text-slate-400 mt-1 block">
+                  {date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
+                </span>
+              </div>
+            );
+          })}
         </div>
       </div>
 

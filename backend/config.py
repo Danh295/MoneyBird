@@ -9,8 +9,12 @@ from dotenv import load_dotenv
 load_dotenv()
 
 class Settings(BaseSettings):
-    gemini_api_key: str = "" 
-    tavily_api_key: str = ""
+    gemini_api_key: str = "AIzaSyCOqnGKuVgL1uv7CXOQy5tK1jbskPXVQ34" 
+    tavily_api_key: str = "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"
+    
+    # Supabase configuration
+    supabase_url: str = "https://czdisykcmzsycudwtstf.supabase.co/"
+    supabase_key: str = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN6ZGlzeWtjbXpzeWN1ZHd0c3RmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg2MTk5NzIsImV4cCI6MjA4NDE5NTk3Mn0.4j25szbtQ2hEKY5b69rIjucSAesRxiq7o9U4pSjbEaU"
     
     model_name: str = "gemini-2.5-flash"
     
