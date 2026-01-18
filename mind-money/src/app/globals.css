@@ -1,90 +1,84 @@
 @import "tailwindcss";
 
 :root {
-  --background: #fffbf5;
-  --foreground: #4a3f35;
+  /* 1. DEFINE YOUR WARM THEME VARIABLES */
+  --background: #fffbf5;   /* Warm Cream */
+  --surface: #ffffff;      /* White */
+  --foreground: #4a3f35;   /* Dark Brown */
   
-  /* Calming Orange/Yellow Theme */
-  --primary: #ff8c42;        /* Warm orange */
-  --primary-light: #ffb366;  /* Light orange */
-  --primary-dark: #e67a33;   /* Deep orange */
+  /* Brand Colors (Warm Orange) */
+  --primary: #ff8c42;
+  --primary-light: #ffb366;
+  --primary-dark: #e67a33;
   
-  --secondary: #ffd966;      /* Soft yellow */
-  --secondary-light: #ffe699; /* Pale yellow */
-  --secondary-dark: #f4c542;  /* Gold yellow */
+  /* Secondary (Soft Yellow) */
+  --secondary: #ffd966;
+  --secondary-light: #ffe699;
+  --secondary-dark: #f4c542;
   
-  --accent: #ffab73;         /* Peachy orange */
-  --accent-light: #ffc799;   /* Light peach */
+  /* Accents */
+  --accent: #ffab73;
+  --accent-light: #ffc799;
   
-  --neutral: #f5f0e8;        /* Warm beige */
-  --neutral-dark: #d9cfc2;   /* Taupe */
+  /* Neutrals (Beige/Taupe) */
+  --neutral: #f5f0e8;
+  --neutral-dark: #d9cfc2;
   
-  --text-primary: #4a3f35;   /* Warm brown */
-  --text-secondary: #7a6f65; /* Muted brown */
-  --text-light: #a99d94;     /* Light brown */
+  /* Text Colors */
+  --text-primary: #4a3f35;
+  --text-secondary: #7a6f65;
+  --text-light: #a99d94;
   
-  --success: #ffb84d;        /* Warm gold */
-  --warning: #ff9966;        /* Soft coral */
-  --danger: #ff8566;         /* Muted red-orange */
+  /* Status */
+  --success: #10b981;
+  --warning: #ff9966;
+  --danger: #ef4444;
   
-  --border: #f0e5d8;         /* Cream */
-  --border-hover: #ffb366;   /* Light orange */
+  /* Borders & Shadows */
+  --border: #f0e5d8;
+  --border-hover: #ffb366;
   
-  --shadow: rgba(255, 140, 66, 0.1);
-  --shadow-md: rgba(255, 140, 66, 0.15);
-  --shadow-lg: rgba(255, 140, 66, 0.2);
+  --shadow-sm: 0 1px 2px 0 rgba(74, 63, 53, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(255, 140, 66, 0.1), 0 2px 4px -2px rgba(255, 140, 66, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(255, 140, 66, 0.1), 0 4px 6px -4px rgba(255, 140, 66, 0.05);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-  
-  /* Custom theme colors */
+/* 2. MAP VARIABLES TO TAILWIND UTILITIES (Optional but helpful) */
+@theme {
   --color-primary: var(--primary);
-  --color-primary-light: var(--primary-light);
   --color-primary-dark: var(--primary-dark);
-  
   --color-secondary: var(--secondary);
-  --color-secondary-light: var(--secondary-light);
-  --color-secondary-dark: var(--secondary-dark);
-  
-  --color-accent: var(--accent);
-  --color-accent-light: var(--accent-light);
-  
   --color-neutral: var(--neutral);
-  --color-neutral-dark: var(--neutral-dark);
+  --color-surface: var(--surface);
+  --color-background: var(--background);
 }
 
+/* 3. BASE STYLES */
 body {
-  background: var(--background);
-  color: var(--foreground);
+  background-color: var(--background);
+  color: var(--text-primary);
   font-family: Arial, Helvetica, sans-serif;
 }
 
-/* Utility classes for consistent theming */
-.btn-primary {
-  @apply bg-[var(--primary)] hover:bg-[var(--primary-dark)] text-white transition-colors;
-}
+/* 4. COMPONENT CLASSES */
+@layer components {
+  /* Primary Button (Orange) */
+  .btn-primary {
+    @apply bg-[var(--primary)] hover:bg-[var(--primary-dark)] text-white font-medium py-2 px-4 rounded-xl transition-all shadow-sm hover:shadow-md cursor-pointer flex items-center gap-2 justify-center;
+  }
+  
+  /* Secondary Button (Yellow/Beige) */
+  .btn-secondary {
+    @apply bg-[var(--secondary)] hover:bg-[var(--secondary-dark)] text-[var(--text-primary)] font-medium py-2 px-4 rounded-xl transition-all cursor-pointer;
+  }
 
-.btn-secondary {
-  @apply bg-[var(--secondary)] hover:bg-[var(--secondary-dark)] text-[var(--text-primary)] transition-colors;
-}
+  /* Outline Button (Clean) */
+  .btn-outline {
+    @apply border border-[var(--border)] hover:bg-[var(--neutral)] text-[var(--text-primary)] font-medium py-2 px-4 rounded-xl transition-all cursor-pointer flex items-center gap-2;
+  }
 
-.card {
-  @apply bg-white border border-[var(--border)] rounded-xl shadow-sm;
+  /* Card Container */
+  .card {
+    @apply bg-white border border-[var(--border)] rounded-2xl shadow-[var(--shadow-sm)];
+  }
 }
-
-.card-header {
-  @apply bg-gradient-to-r from-[var(--primary)] to-[var(--accent)] text-white;
-}
-
-.text-muted {
-  @apply text-[var(--text-secondary)];
-}
-
-.border-theme {
-  @apply border-[var(--border)] hover:border-[var(--border-hover)];
-}
-

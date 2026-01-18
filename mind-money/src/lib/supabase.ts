@@ -1,14 +1,13 @@
-// src/lib/supabase.ts
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-if (!supabaseUrl || !supabaseAnonKey) {
-  console.warn('Supabase credentials not configured. Auth features will be disabled.');
-}
-
-export const supabase = createClient(supabaseUrl || '', supabaseAnonKey || '');
+// Create a valid client only if keys exist, otherwise return null/dummy
+// This prevents the "Client-side exception" white screen
+export const supabase = (supabaseUrl && supabaseAnonKey)
+  ? createClient(supabaseUrl, supabaseAnonKey)
+  : null;
 
 export type AuthUser = {
   id: string;

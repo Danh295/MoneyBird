@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { FinancialProvider } from '@/context/FinancialContext';
 import { ChatProvider } from '@/context/ChatContext';
+import { AuthProvider } from '@/contexts/AuthContext';
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -18,12 +19,14 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${inter.className} bg-slate-50`}>
-        <FinancialProvider>
-          <ChatProvider>
-            {children}
-          </ChatProvider>
-        </FinancialProvider>
+      <body className={`${inter.className} bg-[var(--background)] text-[var(--text-primary)] antialiased`}>
+        <AuthProvider>
+          <FinancialProvider>
+            <ChatProvider>
+              {children}
+            </ChatProvider>
+          </FinancialProvider>
+        </AuthProvider>
       </body>
     </html>
   );
