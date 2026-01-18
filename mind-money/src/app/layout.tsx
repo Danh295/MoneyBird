@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
-import "./globals.css"; // <--- CRITICAL: This restores Tailwind!
+import "./globals.css";
 import { FinancialProvider } from '@/context/FinancialContext';
+import { ChatProvider } from '@/context/ChatContext';
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -17,9 +18,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={inter.className}>
+      <body className={`${inter.className} bg-slate-50`}>
         <FinancialProvider>
-          {children}
+          <ChatProvider>
+            {children}
+          </ChatProvider>
         </FinancialProvider>
       </body>
     </html>

@@ -3,15 +3,16 @@
 import React, { useState } from 'react';
 import { useFinancial } from '@/context/FinancialContext';
 import { ActionItem } from '@/components/ActionItem';
-import { PieChart, ListTodo, Save, Loader2, MessageSquare } from 'lucide-react';
+import { PieChart, ListTodo, Save, Loader2, MessageSquare, ArrowLeft } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
 export default function DashboardPage() {
   const { actions, toggleAction, financialFormSchema } = useFinancial();
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<'overview' | 'form'>('overview');
 
-  // Sort: Uncompleted High Priority first, then others, then completed at bottom
+  // Sort: Uncompleted High Priority first
   const sortedActions = [...actions].sort((a, b) => {
     if (a.isCompleted === b.isCompleted) return b.priorityScore - a.priorityScore;
     return a.isCompleted ? 1 : -1;
@@ -30,7 +31,18 @@ export default function DashboardPage() {
             <p className="text-[var(--text-secondary)] text-sm">Track your progress and update your profile</p>
           </div>
           
-          <div className="flex gap-2">
+          <Link href="/" className="inline-flex items-center gap-2 text-slate-500 hover:text-indigo-600 mb-4 transition-colors text-sm font-medium">
+            <ArrowLeft size={16} />
+            Back to Conversation
+          </Link>
+
+          <div className="flex justify-between items-center">
+            <div>
+              <h1 className="text-2xl font-bold text-slate-800">Financial Command Center</h1>
+              <p className="text-slate-500 text-sm">Track your progress and update your profile</p>
+            </div>
+            
+            <div className="flex gap-2">
             <button
               onClick={() => router.push('/')}
               className="px-4 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-2 bg-gradient-to-r from-[var(--primary)] to-[var(--accent)] text-white hover:shadow-md"
@@ -54,12 +66,10 @@ export default function DashboardPage() {
       </div>
 
       <div className="flex-1 p-8 overflow-y-auto">
+        {/* ... (Rest of the file remains the same as your previous version) ... */}
         <div className="max-w-6xl mx-auto">
-          
-          {/* TAB 1: ACTION CENTER */}
           {activeTab === 'overview' && (
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-              {/* Left Column: Progress & Stats */}
               <div className="space-y-6">
                 <div className="bg-white p-6 rounded-2xl border border-[var(--border)] shadow-sm">
                   <h3 className="font-bold text-[var(--text-primary)] mb-4">Completion Status</h3>
@@ -86,7 +96,6 @@ export default function DashboardPage() {
                 </div>
               </div>
 
-              {/* Right Column: The Action List */}
               <div className="lg:col-span-2 space-y-4">
                  <h2 className="text-lg font-bold text-[var(--text-primary)] mb-4">Priority Actions</h2>
                  {sortedActions.length === 0 ? (
@@ -102,7 +111,6 @@ export default function DashboardPage() {
             </div>
           )}
 
-          {/* TAB 2: DYNAMIC FINANCIAL FORM */}
           {activeTab === 'form' && (
             <div className="bg-white rounded-2xl border border-[var(--border)] shadow-sm p-8 max-w-3xl mx-auto animate-in fade-in slide-in-from-bottom-4">
               {!financialFormSchema ? (
@@ -117,11 +125,9 @@ export default function DashboardPage() {
                     <h2 className="text-2xl font-bold text-slate-800">{financialFormSchema.title}</h2>
                     <p className="text-slate-500">{financialFormSchema.description}</p>
                   </div>
-
-                  {/* Dynamically Render Sections */}
+                  {/* ... (Keep your existing dynamic form mapping here) ... */}
                   {Object.entries(financialFormSchema).map(([key, section]: [string, any]) => {
                     if (key === 'title' || key === 'description') return null;
-                    
                     return (
                       <div key={key} className="space-y-4">
                         <h3 className="text-lg font-bold text-indigo-900 border-l-4 border-indigo-500 pl-3">
@@ -133,7 +139,6 @@ export default function DashboardPage() {
                               <label className="block text-sm font-medium text-slate-700 mb-1">
                                 {field.label} {field.required && <span className="text-rose-500">*</span>}
                               </label>
-                              
                               {field.type === 'select' ? (
                                 <select className="w-full p-3 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none transition">
                                   {field.options.map((opt: string) => <option key={opt}>{opt}</option>)}
@@ -154,7 +159,6 @@ export default function DashboardPage() {
                       </div>
                     );
                   })}
-
                   <div className="pt-6 border-t border-slate-100">
                     <button type="button" className="w-full py-4 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl flex items-center justify-center gap-2 transition-all shadow-lg hover:shadow-indigo-200">
                       <Save size={20} />

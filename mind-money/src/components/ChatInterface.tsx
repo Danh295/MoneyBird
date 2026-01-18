@@ -6,8 +6,9 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import clsx from 'clsx';
 import { ActionPlanCard } from './ActionPlanCard';
-import { useFinancial } from '@/context/FinancialContext'; // Import context
 import { useRouter } from 'next/navigation';
+import { useFinancial } from '@/context/FinancialContext'; 
+import { useChat } from '@/context/ChatContext'; 
 
 // Types
 type AgentLog = {
@@ -33,18 +34,11 @@ type ChatSession = {
 };
 
 export default function ChatInterface() {
-  const { addActionPlan } = useFinancial(); // Connection to the Dashboard
+  // --- FIX 1: Removed duplicate declaration ---
+  const { addActionPlan } = useFinancial(); 
   const router = useRouter();
   const [sessionId, setSessionId] = useState(`session-${Date.now()}`);
   const [input, setInput] = useState('');
-  const [messages, setMessages] = useState<Message[]>([
-    { 
-      id: '1', 
-      role: 'assistant', 
-      content: 'Hello. I am MindMoney. I am here to optimize your financial life. How can I help you today?' 
-    }
-  ]);
-  const [isThinking, setIsThinking] = useState(false);
   const [showAgentPanel, setShowAgentPanel] = useState(false);
   const [showHistoryPanel, setShowHistoryPanel] = useState(false);
   const [agentLogs, setAgentLogs] = useState<AgentLog[]>([]);
@@ -110,20 +104,18 @@ export default function ChatInterface() {
   const handleSend = async () => {
     if (!input.trim()) return;
 
-    // 1. Add User Message
-    const userMsg: Message = { id: Date.now().toString(), role: 'user', content: input };
-    setMessages(prev => [...prev, userMsg]);
+    const userMsg = { id: Date.now().toString(), role: 'user' as const, content: input };
+    addMessage(userMsg);
     setInput('');
     setIsThinking(true);
     setAgentLogs([]); 
 
     try {
-      // 2. Call the API
       const res = await fetch('http://127.0.0.1:8000/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          message: input.trim(),
+          message: userMsg.content,
           history: messages.map(m => ({ role: m.role, content: m.content })),
           session_id: sessionId
         })
@@ -131,7 +123,6 @@ export default function ChatInterface() {
 
       const data = await res.json();
 
-      // 3. Agent Log Animation
       if (data.agent_logs) {
         data.agent_logs.forEach((log: any, index: number) => {
           setTimeout(() => {
@@ -146,33 +137,31 @@ export default function ChatInterface() {
         });
       }
 
-      // 4. Final Response + Context Update
       const delay = (data.agent_logs?.length || 0) * 400 + 500;
       
       setTimeout(() => {
         setIsThinking(false);
         
-        // CRITICAL: Save to Global Context (The Dashboard)
         if (data.action_plan && Object.keys(data.action_plan).length > 0) {
             addActionPlan(data.action_plan);
         }
 
-        setMessages(prev => [...prev, {
+        addMessage({
           id: Date.now().toString(),
           role: 'assistant',
           content: data.response,
           actionPlan: data.action_plan
-        }]);
+        });
       }, delay);
 
     } catch (err) {
       console.error(err);
       setIsThinking(false);
-      setMessages(prev => [...prev, {
+      addMessage({
         id: Date.now().toString(),
         role: 'assistant',
-        content: "I'm having trouble connecting to the financial brain. Please check the backend connection."
-      }]);
+        content: "⚠️ I'm having trouble reaching the brain. Ensure the backend is running on port 8000."
+      });
     }
   };
 
@@ -183,6 +172,7 @@ export default function ChatInterface() {
       <div className="flex-1 flex flex-col max-w-5xl mx-auto w-full bg-white shadow-xl h-full relative">
         
         {/* Header */}
+        {/* FIX 2: Removed 'pt-20' since the floating nav is gone */}
         <header className="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-white z-10">
           <div className="flex items-center gap-3">
             <button
@@ -226,7 +216,6 @@ export default function ChatInterface() {
           {messages.map((msg) => (
             <div key={msg.id} className={clsx("flex gap-4 max-w-3xl mx-auto", msg.role === 'user' ? "flex-row-reverse" : "")}>
               
-              {/* Avatar */}
               <div className={clsx(
                 "w-10 h-10 rounded-full flex items-center justify-center shrink-0 shadow-sm",
                 msg.role === 'assistant' ? "bg-white border border-[var(--border)]" : "bg-gradient-to-br from-[var(--primary)] to-[var(--accent)]"
@@ -235,7 +224,6 @@ export default function ChatInterface() {
               </div>
 
               <div className="flex-1 space-y-4">
-                {/* Message Bubble */}
                 <div className={clsx(
                   "p-6 rounded-2xl shadow-sm text-sm leading-relaxed prose prose-slate max-w-none",
                   msg.role === 'assistant' 
@@ -247,7 +235,6 @@ export default function ChatInterface() {
                   </ReactMarkdown>
                 </div>
 
-                {/* DYNAMIC ACTION PLAN WIDGET */}
                 {msg.actionPlan && Object.keys(msg.actionPlan).length > 0 && (
                   <ActionPlanCard data={msg.actionPlan} />
                 )}
