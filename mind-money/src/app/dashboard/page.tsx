@@ -3,11 +3,13 @@
 import React, { useState } from 'react';
 import { useFinancial } from '@/context/FinancialContext';
 import { ActionItem } from '@/components/ActionItem';
-import { PieChart, ListTodo, Save, Loader2, ArrowLeft } from 'lucide-react';
+import { PieChart, ListTodo, Save, Loader2, MessageSquare, ArrowLeft } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
 export default function DashboardPage() {
   const { actions, toggleAction, financialFormSchema } = useFinancial();
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState<'overview' | 'form'>('overview');
 
   // Sort: Uncompleted High Priority first
@@ -37,6 +39,12 @@ export default function DashboardPage() {
             </div>
             
             <div className="flex gap-2">
+            <button
+              onClick={() => router.push('/')}
+              className="px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 bg-emerald-600 text-white hover:bg-emerald-700"
+            >
+              <MessageSquare size={16} /> Chat
+            </button>
               <button 
                 onClick={() => setActiveTab('overview')}
                 className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${activeTab === 'overview' ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-600'}`}
