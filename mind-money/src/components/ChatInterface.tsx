@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, Bot, User, BrainCircuit, X, Sparkles, LayoutDashboard } from 'lucide-react';
+import { Send, Bot, User, BrainCircuit, X, Sparkles, LayoutDashboard, Menu } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import clsx from 'clsx';
@@ -38,6 +38,7 @@ export default function ChatInterface() {
   ]);
   const [isThinking, setIsThinking] = useState(false);
   const [showAgentPanel, setShowAgentPanel] = useState(false);
+  const [showHistoryPanel, setShowHistoryPanel] = useState(false);
   const [agentLogs, setAgentLogs] = useState<AgentLog[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -127,6 +128,12 @@ export default function ChatInterface() {
         {/* Header */}
         <header className="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-white z-10">
           <div className="flex items-center gap-3">
+            <button
+              onClick={() => setShowHistoryPanel(!showHistoryPanel)}
+              className="p-2 rounded-lg text-slate-600 hover:bg-slate-100 transition-colors"
+            >
+              <Menu size={20} />
+            </button>
             <div className="bg-indigo-600 p-2 rounded-lg">
               <Sparkles className="text-white w-5 h-5" />
             </div>
@@ -223,6 +230,75 @@ export default function ChatInterface() {
             >
               <Send size={20} />
             </button>
+          </div>
+        </div>
+      </div>
+
+      {/* LEFT: CHAT HISTORY PANEL (Collapsible) */}
+      <div className={clsx(
+        "fixed inset-y-0 left-0 w-80 bg-white shadow-2xl transform transition-transform duration-300 ease-in-out border-r border-slate-200 z-50",
+        showHistoryPanel ? "translate-x-0" : "-translate-x-full"
+      )}>
+        <div className="p-4 border-b border-slate-200 bg-slate-50 flex justify-between items-center">
+          <h3 className="text-slate-800 font-semibold text-sm uppercase tracking-wider">
+            Chat History
+          </h3>
+          <button onClick={() => setShowHistoryPanel(false)} className="text-slate-500 hover:text-slate-800">
+            <X size={16} />
+          </button>
+        </div>
+        
+        <div className="p-4 space-y-3 overflow-y-auto h-[calc(100vh-60px)]">
+          {/* Hardcoded chat sessions for now - TODO: Make dynamic */}
+          <div className="bg-slate-50 rounded-lg p-3 border border-slate-200 hover:bg-slate-100 cursor-pointer transition-colors">
+            <div className="flex items-center gap-2 mb-1">
+              <div className="w-2 h-2 rounded-full bg-emerald-500" />
+              <span className="font-semibold text-sm text-slate-800">Today</span>
+            </div>
+            <p className="text-xs text-slate-600 line-clamp-2">
+              Debt payoff strategy with travel savings
+            </p>
+            <span className="text-[10px] text-slate-400 mt-1 block">2 hours ago</span>
+          </div>
+
+          <div className="bg-slate-50 rounded-lg p-3 border border-slate-200 hover:bg-slate-100 cursor-pointer transition-colors">
+            <div className="flex items-center gap-2 mb-1">
+              <span className="font-semibold text-sm text-slate-800">Yesterday</span>
+            </div>
+            <p className="text-xs text-slate-600 line-clamp-2">
+              Investment portfolio rebalancing advice
+            </p>
+            <span className="text-[10px] text-slate-400 mt-1 block">Jan 16, 2026</span>
+          </div>
+
+          <div className="bg-slate-50 rounded-lg p-3 border border-slate-200 hover:bg-slate-100 cursor-pointer transition-colors">
+            <div className="flex items-center gap-2 mb-1">
+              <span className="font-semibold text-sm text-slate-800">Last Week</span>
+            </div>
+            <p className="text-xs text-slate-600 line-clamp-2">
+              Emergency fund setup and budgeting
+            </p>
+            <span className="text-[10px] text-slate-400 mt-1 block">Jan 10, 2026</span>
+          </div>
+
+          <div className="bg-slate-50 rounded-lg p-3 border border-slate-200 hover:bg-slate-100 cursor-pointer transition-colors">
+            <div className="flex items-center gap-2 mb-1">
+              <span className="font-semibold text-sm text-slate-800">Jan 5, 2026</span>
+            </div>
+            <p className="text-xs text-slate-600 line-clamp-2">
+              Tax optimization strategies for 2026
+            </p>
+            <span className="text-[10px] text-slate-400 mt-1 block">12 days ago</span>
+          </div>
+
+          <div className="bg-slate-50 rounded-lg p-3 border border-slate-200 hover:bg-slate-100 cursor-pointer transition-colors">
+            <div className="flex items-center gap-2 mb-1">
+              <span className="font-semibold text-sm text-slate-800">Dec 2025</span>
+            </div>
+            <p className="text-xs text-slate-600 line-clamp-2">
+              Retirement planning and 401k review
+            </p>
+            <span className="text-[10px] text-slate-400 mt-1 block">3 weeks ago</span>
           </div>
         </div>
       </div>
