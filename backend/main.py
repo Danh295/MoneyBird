@@ -1,32 +1,75 @@
-"""
-main.py - The API Entrypoint
-"""
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from schemas import ChatRequest, ChatResponse
 from workflow import run_mindmoney_workflow
+from supabase_logger import get_supabase_logger
 import uvicorn
 
 app = FastAPI(title="MindMoney API")
 
-# Allow React to talk to Python
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"], # Allow all for hackathon (safer/easier)
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
+# --- 1. NEW: History Endpoint (Restores Chat) ---
+@app.get("/api/history/{session_id}")
+async def get_history(session_id: str):
+    logger = get_supabase_logger()
+    try:
+        # Fetch last 50 turns from Supabase
+        history = await logger.get_session_history(session_id)
+        
+        # Format for Frontend
+        formatted_history = []
+        for turn in history:
+            # Add User Message
+            formatted_history.append({
+                "id": f"{turn['id']}-user",
+                "role": "user",
+                "content": turn['user_message']
+            })
+            # Add AI Response
+            formatted_history.append({
+                "id": f"{turn['id']}-ai",
+                "role": "assistant",
+                "content": turn['assistant_response']
+            })
+            
+        return {"history": formatted_history}
+    except Exception as e:
+        print(f"❌ History Error: {e}")
+        return {"history": []}
+
+# --- 2. UPDATED: Chat Endpoint (Saves to DB) ---
 @app.post("/api/chat", response_model=ChatResponse)
 async def chat_endpoint(request: ChatRequest):
-    print(f"📥 Received: {request.message}")
+    print(f"📥 Received: {request.message} (Session: {request.session_id})")
     
     try:
-        # Run the LangGraph Brain (4-agent workflow)
+        # 1. Run the AI Workflow
         result_state = await run_mindmoney_workflow(
             user_input=request.message,
             history=request.history
+        )
+        
+        # 2. LOG TO SUPABASE (The Missing Link)
+        logger = get_supabase_logger()
+        
+        # Calculate turn number (basic increment logic or fetch count)
+        # For hackathon, passing 1 or random is okay, but ideally fetch count.
+        # We'll rely on the logger's auto-increment or handle it loosely.
+        
+        await logger.log_conversation_turn(
+            session_id=request.session_id,
+            turn_number=len(request.history) + 1, 
+            user_message=request.message,
+            assistant_response=result_state["final_response"],
+            state_snapshot=result_state,
+            agent_logs=result_state["agent_log"]
         )
         
         return ChatResponse(
