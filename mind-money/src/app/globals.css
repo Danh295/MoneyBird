@@ -1,8 +1,38 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #fffbf5;
+  --foreground: #4a3f35;
+  
+  /* Calming Orange/Yellow Theme */
+  --primary: #ff8c42;        /* Warm orange */
+  --primary-light: #ffb366;  /* Light orange */
+  --primary-dark: #e67a33;   /* Deep orange */
+  
+  --secondary: #ffd966;      /* Soft yellow */
+  --secondary-light: #ffe699; /* Pale yellow */
+  --secondary-dark: #f4c542;  /* Gold yellow */
+  
+  --accent: #ffab73;         /* Peachy orange */
+  --accent-light: #ffc799;   /* Light peach */
+  
+  --neutral: #f5f0e8;        /* Warm beige */
+  --neutral-dark: #d9cfc2;   /* Taupe */
+  
+  --text-primary: #4a3f35;   /* Warm brown */
+  --text-secondary: #7a6f65; /* Muted brown */
+  --text-light: #a99d94;     /* Light brown */
+  
+  --success: #ffb84d;        /* Warm gold */
+  --warning: #ff9966;        /* Soft coral */
+  --danger: #ff8566;         /* Muted red-orange */
+  
+  --border: #f0e5d8;         /* Cream */
+  --border-hover: #ffb366;   /* Light orange */
+  
+  --shadow: rgba(255, 140, 66, 0.1);
+  --shadow-md: rgba(255, 140, 66, 0.15);
+  --shadow-lg: rgba(255, 140, 66, 0.2);
 }
 
 @theme inline {
@@ -10,12 +40,27 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  
+  /* Custom theme colors */
+  --color-primary: var(--primary);
+  --color-primary-light: var(--primary-light);
+  --color-primary-dark: var(--primary-dark);
+  
+  --color-secondary: var(--secondary);
+  --color-secondary-light: var(--secondary-light);
+  --color-secondary-dark: var(--secondary-dark);
+  
+  --color-accent: var(--accent);
+  --color-accent-light: var(--accent-light);
+  
+  --color-neutral: var(--neutral);
+  --color-neutral-dark: var(--neutral-dark);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: #2a1f1a;
+    --foreground: #f5f0e8;
   }
 }
 
@@ -24,3 +69,29 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Utility classes for consistent theming */
+.btn-primary {
+  @apply bg-[var(--primary)] hover:bg-[var(--primary-dark)] text-white transition-colors;
+}
+
+.btn-secondary {
+  @apply bg-[var(--secondary)] hover:bg-[var(--secondary-dark)] text-[var(--text-primary)] transition-colors;
+}
+
+.card {
+  @apply bg-white border border-[var(--border)] rounded-xl shadow-sm;
+}
+
+.card-header {
+  @apply bg-gradient-to-r from-[var(--primary)] to-[var(--accent)] text-white;
+}
+
+.text-muted {
+  @apply text-[var(--text-secondary)];
+}
+
+.border-theme {
+  @apply border-[var(--border)] hover:border-[var(--border-hover)];
+}
+

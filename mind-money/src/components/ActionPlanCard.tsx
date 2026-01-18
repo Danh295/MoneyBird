@@ -28,14 +28,14 @@ export function ActionPlanCard({ data }: { data: ActionPlanData }) {
   if (!data || (!data.immediate_actions && !data.quick_wins)) return null;
 
   return (
-    <div className="mt-6 w-full bg-white rounded-xl border border-indigo-100 shadow-xl shadow-indigo-100/50 overflow-hidden animate-in slide-in-from-bottom-4 duration-500">
+    <div className="mt-6 w-full bg-white rounded-xl border border-[var(--border)] shadow-xl shadow-[var(--shadow-lg)] overflow-hidden animate-in slide-in-from-bottom-4 duration-500">
       
       {/* HEADER BANNER */}
-      <div className="bg-linear-to-r from-indigo-600 to-violet-600 p-5 text-white flex justify-between items-center">
+      <div className="bg-gradient-to-r from-[var(--primary)] to-[var(--accent)] p-5 text-white flex justify-between items-center">
         <div>
           <div className="flex items-center gap-2 mb-1 opacity-90">
-            <Target className="w-4 h-4 text-indigo-200" />
-            <span className="text-xs font-bold uppercase tracking-wider text-indigo-100">Strategic Roadmap</span>
+            <Target className="w-4 h-4 text-white/80" />
+            <span className="text-xs font-bold uppercase tracking-wider text-white/90">Strategic Roadmap</span>
           </div>
           <h3 className="font-bold text-xl tracking-tight">Your Action Plan</h3>
         </div>
@@ -43,7 +43,7 @@ export function ActionPlanCard({ data }: { data: ActionPlanData }) {
         {/* Optional Health Score Badge */}
         {data.financial_health_score !== undefined && (
           <div className="text-center bg-white/10 backdrop-blur-md rounded-lg px-3 py-2 border border-white/20 shadow-inner">
-            <div className="text-[10px] text-indigo-100 uppercase tracking-wide font-medium">Health Score</div>
+            <div className="text-[10px] text-white/80 uppercase tracking-wide font-medium">Health Score</div>
             <div className="text-2xl font-bold leading-none">{data.financial_health_score}</div>
           </div>
         )}
@@ -53,18 +53,18 @@ export function ActionPlanCard({ data }: { data: ActionPlanData }) {
         
         {/* SECTION 1: QUICK WINS (High Dopamine) */}
         {data.quick_wins && data.quick_wins.length > 0 && (
-          <div className="bg-emerald-50 border border-emerald-100 rounded-xl p-5 relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-16 h-16 bg-emerald-100 rounded-bl-full -mr-8 -mt-8 opacity-50" />
+          <div className="bg-gradient-to-br from-[var(--secondary-light)] to-[var(--neutral)] border border-[var(--border)] rounded-xl p-5 relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-16 h-16 bg-[var(--primary)]/10 rounded-bl-full -mr-8 -mt-8 opacity-50" />
             
-            <h4 className="flex items-center gap-2 text-sm font-bold text-emerald-800 mb-4 relative z-10">
+            <h4 className="flex items-center gap-2 text-sm font-bold text-[var(--primary)] mb-4 relative z-10">
               <CheckCircle2 className="w-5 h-5" />
               Quick Wins (Do these today)
             </h4>
             
             <ul className="space-y-3 relative z-10">
               {data.quick_wins.map((win, idx) => (
-                <li key={idx} className="flex items-start gap-3 text-sm text-emerald-900/80 bg-white/60 p-2 rounded-lg border border-emerald-100/50">
-                  <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
+                <li key={idx} className="flex items-start gap-3 text-sm text-[var(--text-primary)] bg-white/60 p-2 rounded-lg border border-[var(--border)]">
+                  <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-[var(--primary)] shrink-0" />
                   <span className="leading-relaxed">{win}</span>
                 </li>
               ))}
@@ -75,8 +75,8 @@ export function ActionPlanCard({ data }: { data: ActionPlanData }) {
         {/* SECTION 2: PRIORITY ACTIONS TABLE */}
         {data.immediate_actions && data.immediate_actions.length > 0 && (
           <div>
-            <h4 className="text-sm font-bold text-slate-700 mb-4 flex items-center gap-2">
-              <Clock className="w-4 h-4 text-indigo-500" />
+            <h4 className="text-sm font-bold text-[var(--text-primary)] mb-4 flex items-center gap-2">
+              <Clock className="w-4 h-4 text-[var(--primary)]" />
               Priority Actions
             </h4>
             
@@ -84,28 +84,28 @@ export function ActionPlanCard({ data }: { data: ActionPlanData }) {
               {data.immediate_actions.map((item, idx) => (
                 <div 
                   key={idx} 
-                  className="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-slate-50 rounded-xl border border-slate-200 hover:border-indigo-300 hover:shadow-md transition-all group"
+                  className="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-[var(--neutral)] rounded-xl border border-[var(--border)] hover:border-[var(--primary)] hover:shadow-md transition-all group"
                 >
                   <div className="flex items-start gap-3 mb-3 sm:mb-0">
                     <div className={clsx(
                       "mt-1.5 w-2 h-2 rounded-full shrink-0",
-                      item.difficulty === 'hard' ? 'bg-rose-400 shadow-[0_0_8px_rgba(251,113,133,0.6)]' : 
-                      item.difficulty === 'medium' ? 'bg-amber-400' : 'bg-emerald-400'
+                      item.difficulty === 'hard' ? 'bg-[var(--danger)] shadow-[0_0_8px_var(--shadow-md)]' : 
+                      item.difficulty === 'medium' ? 'bg-[var(--secondary)]' : 'bg-[var(--success)]'
                     )} />
                     <div>
-                      <p className="text-sm font-semibold text-slate-800 group-hover:text-indigo-700 transition-colors">
+                      <p className="text-sm font-semibold text-[var(--text-primary)] group-hover:text-[var(--primary)] transition-colors">
                         {item.action}
                       </p>
-                      <p className="text-xs text-slate-500 mt-0.5">{item.expected_impact}</p>
+                      <p className="text-xs text-[var(--text-secondary)] mt-0.5">{item.expected_impact}</p>
                     </div>
                   </div>
                   
-                  <div className="flex items-center justify-between sm:justify-end gap-4 pl-5 sm:pl-0 border-l-2 border-slate-200 sm:border-l-0">
+                  <div className="flex items-center justify-between sm:justify-end gap-4 pl-5 sm:pl-0 border-l-2 border-[var(--border)] sm:border-l-0">
                     <span className={clsx(
                       "text-[10px] px-2 py-1 rounded font-medium uppercase tracking-wide",
-                      item.difficulty === 'easy' ? "bg-emerald-100 text-emerald-700" :
-                      item.difficulty === 'medium' ? "bg-amber-100 text-amber-700" :
-                      "bg-rose-100 text-rose-700"
+                      item.difficulty === 'easy' ? "bg-[var(--success)] text-white" :
+                      item.difficulty === 'medium' ? "bg-[var(--secondary)] text-[var(--text-primary)]" :
+                      "bg-[var(--danger)] text-white"
                     )}>
                       {item.difficulty}
                     </span>

@@ -4,6 +4,7 @@ from schemas import ChatRequest, ChatResponse
 from workflow import run_mindmoney_workflow
 from supabase_logger import get_supabase_logger
 import uvicorn
+import uuid
 
 app = FastAPI(title="MindMoney API")
 
@@ -15,7 +16,19 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# --- 1. NEW: History Endpoint (Restores Chat) ---
+# --- 1. NEW: Get All Sessions ---
+@app.get("/api/sessions")
+async def get_sessions():
+    """Get all chat sessions with preview."""
+    logger = get_supabase_logger()
+    try:
+        sessions = await logger.get_all_sessions(limit=50)
+        return {"sessions": sessions}
+    except Exception as e:
+        print(f"❌ Sessions Error: {e}")
+        return {"sessions": []}
+
+# --- 2. NEW: History Endpoint (Restores Chat) ---
 @app.get("/api/history/{session_id}")
 async def get_history(session_id: str):
     logger = get_supabase_logger()
@@ -44,7 +57,7 @@ async def get_history(session_id: str):
         print(f"❌ History Error: {e}")
         return {"history": []}
 
-# --- 2. UPDATED: Chat Endpoint (Saves to DB) ---
+# --- 3. UPDATED: Chat Endpoint (Saves to DB) ---
 @app.post("/api/chat", response_model=ChatResponse)
 async def chat_endpoint(request: ChatRequest):
     print(f"📥 Received: {request.message} (Session: {request.session_id})")
@@ -56,13 +69,13 @@ async def chat_endpoint(request: ChatRequest):
             history=request.history
         )
         
-        # 2. LOG TO SUPABASE (The Missing Link)
+        # 2. LOG TO SUPABASE
         logger = get_supabase_logger()
         
-        # Calculate turn number (basic increment logic or fetch count)
-        # For hackathon, passing 1 or random is okay, but ideally fetch count.
-        # We'll rely on the logger's auto-increment or handle it loosely.
+        # Update session metadata
+        await logger.create_or_update_session(request.session_id, request.message)
         
+        # Log conversation turn
         await logger.log_conversation_turn(
             session_id=request.session_id,
             turn_number=len(request.history) + 1, 

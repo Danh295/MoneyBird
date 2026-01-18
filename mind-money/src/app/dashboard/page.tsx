@@ -22,10 +22,14 @@ export default function DashboardPage() {
   const progress = actions.length > 0 ? (completedCount / actions.length) * 100 : 0;
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col pt-20"> {/* Added pt-20 for navbar */}
+    <div className="min-h-screen bg-[var(--background)] flex flex-col">
       {/* Dashboard Header */}
-      <div className="bg-white border-b border-slate-200 px-8 py-6">
-        <div className="max-w-6xl mx-auto">
+      <div className="bg-white border-b border-[var(--border)] px-8 py-6 shadow-sm">
+        <div className="max-w-6xl mx-auto flex justify-between items-center">
+          <div>
+            <h1 className="text-2xl font-bold text-[var(--text-primary)]">Financial Command Center</h1>
+            <p className="text-[var(--text-secondary)] text-sm">Track your progress and update your profile</p>
+          </div>
           
           <Link href="/" className="inline-flex items-center gap-2 text-slate-500 hover:text-indigo-600 mb-4 transition-colors text-sm font-medium">
             <ArrowLeft size={16} />
@@ -41,23 +45,22 @@ export default function DashboardPage() {
             <div className="flex gap-2">
             <button
               onClick={() => router.push('/')}
-              className="px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 bg-emerald-600 text-white hover:bg-emerald-700"
+              className="px-4 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-2 bg-gradient-to-r from-[var(--primary)] to-[var(--accent)] text-white hover:shadow-md"
             >
               <MessageSquare size={16} /> Chat
             </button>
-              <button 
-                onClick={() => setActiveTab('overview')}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${activeTab === 'overview' ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-600'}`}
-              >
-                <ListTodo size={16} /> Action Plan
-              </button>
-              <button 
-                onClick={() => setActiveTab('form')}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${activeTab === 'form' ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-600'}`}
-              >
-                <PieChart size={16} /> Financial Profile
-              </button>
-            </div>
+            <button 
+              onClick={() => setActiveTab('overview')}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${activeTab === 'overview' ? 'bg-gradient-to-r from-[var(--primary)] to-[var(--accent)] text-white' : 'bg-[var(--neutral)] text-[var(--text-primary)]'}`}
+            >
+              <ListTodo size={16} /> Action Plan
+            </button>
+            <button 
+              onClick={() => setActiveTab('form')}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${activeTab === 'form' ? 'bg-gradient-to-r from-[var(--primary)] to-[var(--accent)] text-white' : 'bg-[var(--neutral)] text-[var(--text-primary)]'}`}
+            >
+              <PieChart size={16} /> Financial Profile
+            </button>
           </div>
         </div>
       </div>
@@ -68,25 +71,25 @@ export default function DashboardPage() {
           {activeTab === 'overview' && (
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
               <div className="space-y-6">
-                <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-                  <h3 className="font-bold text-slate-700 mb-4">Completion Status</h3>
+                <div className="bg-white p-6 rounded-2xl border border-[var(--border)] shadow-sm">
+                  <h3 className="font-bold text-[var(--text-primary)] mb-4">Completion Status</h3>
                   <div className="relative pt-1">
                     <div className="flex mb-2 items-center justify-between">
                       <div>
-                        <span className="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-indigo-600 bg-indigo-200">
+                        <span className="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-white bg-gradient-to-r from-[var(--primary)] to-[var(--accent)]">
                           Progress
                         </span>
                       </div>
                       <div className="text-right">
-                        <span className="text-xs font-semibold inline-block text-indigo-600">
+                        <span className="text-xs font-semibold inline-block text-[var(--primary)]">
                           {Math.round(progress)}%
                         </span>
                       </div>
                     </div>
-                    <div className="overflow-hidden h-2 mb-4 text-xs flex rounded bg-indigo-200">
-                      <div style={{ width: `${progress}%` }} className="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-indigo-600 transition-all duration-500"></div>
+                    <div className="overflow-hidden h-2 mb-4 text-xs flex rounded bg-[var(--secondary-light)]">
+                      <div style={{ width: `${progress}%` }} className="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-gradient-to-r from-[var(--primary)] to-[var(--accent)] transition-all duration-500"></div>
                     </div>
-                    <p className="text-xs text-slate-500 text-center">
+                    <p className="text-xs text-[var(--text-secondary)] text-center">
                       {completedCount} of {actions.length} tasks completed
                     </p>
                   </div>
@@ -94,10 +97,10 @@ export default function DashboardPage() {
               </div>
 
               <div className="lg:col-span-2 space-y-4">
-                 <h2 className="text-lg font-bold text-slate-800 mb-4">Priority Actions</h2>
+                 <h2 className="text-lg font-bold text-[var(--text-primary)] mb-4">Priority Actions</h2>
                  {sortedActions.length === 0 ? (
-                   <div className="text-center py-12 bg-white rounded-2xl border border-dashed border-slate-300">
-                     <p className="text-slate-400">No actions generated yet. Chat with the AI to build your plan.</p>
+                   <div className="text-center py-12 bg-white rounded-2xl border border-dashed border-[var(--border)]">
+                     <p className="text-[var(--text-secondary)]">No actions generated yet. Chat with the AI to build your plan.</p>
                    </div>
                  ) : (
                    sortedActions.map(action => (
@@ -109,7 +112,7 @@ export default function DashboardPage() {
           )}
 
           {activeTab === 'form' && (
-            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-8 max-w-3xl mx-auto animate-in fade-in slide-in-from-bottom-4">
+            <div className="bg-white rounded-2xl border border-[var(--border)] shadow-sm p-8 max-w-3xl mx-auto animate-in fade-in slide-in-from-bottom-4">
               {!financialFormSchema ? (
                  <div className="text-center py-12">
                    <Loader2 className="w-12 h-12 text-indigo-200 animate-spin mx-auto mb-4" />

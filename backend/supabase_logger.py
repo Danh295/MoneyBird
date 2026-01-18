@@ -129,6 +129,73 @@ class SupabaseLogger:
             return True
         except Exception:
             return False
+    
+    async def get_all_sessions(self, limit: int = 50) -> List[Dict[str, Any]]:
+        """Retrieve all chat sessions with metadata."""
+        try:
+            client = self.get_client()
+            
+            # Get unique sessions with their last message
+            result = client.table("conversation_turns")\
+                .select("session_id, user_message, created_at")\
+                .order("created_at", desc=True)\
+                .limit(limit * 2)\
+                .execute()
+            
+            if not result.data:
+                return []
+            
+            # Group by session_id and get the latest message for each
+            sessions_map = {}
+            for turn in result.data:
+                session_id = turn["session_id"]
+                if session_id not in sessions_map:
+                    sessions_map[session_id] = {
+                        "session_id": session_id,
+                        "preview": turn["user_message"][:100],  # First 100 chars
+                        "last_message_at": turn["created_at"],
+                        "created_at": turn["created_at"]
+                    }
+            
+            # Convert to list and sort by last message
+            sessions = list(sessions_map.values())
+            sessions.sort(key=lambda x: x["last_message_at"], reverse=True)
+            
+            return sessions[:limit]
+            
+        except Exception as e:
+            print(f"Supabase sessions query error: {e}")
+            return []
+    
+    async def create_or_update_session(self, session_id: str, user_message: str) -> bool:
+        """Create or update session metadata."""
+        try:
+            client = self.get_client()
+            
+            # Check if session exists
+            existing = client.table("sessions")\
+                .select("id")\
+                .eq("session_id", session_id)\
+                .limit(1)\
+                .execute()
+            
+            if existing.data:
+                # Update existing session
+                client.table("sessions")\
+                    .update({"last_message_at": datetime.utcnow().isoformat()})\
+                    .eq("session_id", session_id)\
+                    .execute()
+            else:
+                # Create new session
+                client.table("sessions")\
+                    .insert({"session_id": session_id})\
+                    .execute()
+            
+            return True
+            
+        except Exception as e:
+            print(f"Session update error: {e}")
+            return False
 
 
 # Singleton instance
