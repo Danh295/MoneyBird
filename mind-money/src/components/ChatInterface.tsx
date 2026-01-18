@@ -173,13 +173,13 @@ export default function ChatInterface() {
   };
 
   return (
-    <div className="flex h-screen bg-[var(--background)] overflow-hidden relative">
+    <div className="flex h-screen bg-[var(--background)] overflow-hidden relative py-8">
       
       {/* AUTH MODAL */}
       <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} />
 
       {/* MAIN CHAT AREA */}
-      <div className="flex-1 flex flex-col max-w-5xl mx-auto w-full bg-white shadow-xl h-full relative">
+      <div className="flex-1 flex flex-col max-w-6xl mx-auto w-full bg-white shadow-5xl h-full relative rounded-2xl overflow-hidden" style={{ boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 60px rgba(255, 140, 66, 0.15)' }}>
         
         {/* HEADER */}
         <header className="px-6 py-4 border-b border-[var(--border)] flex justify-between items-center bg-white z-10">
