@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, Bot, User, BrainCircuit, X, Sparkles, LayoutDashboard, Menu } from 'lucide-react';
+import { Send, Bot, User, BrainCircuit, X, Sparkles, LayoutDashboard, History } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import clsx from 'clsx';
@@ -179,7 +179,7 @@ export default function ChatInterface() {
               onClick={() => setShowHistoryPanel(!showHistoryPanel)}
               className="p-2 rounded-lg text-[var(--text-secondary)] hover:bg-[var(--neutral)] transition-colors"
             >
-              <Menu size={20} />
+              <History size={20} />
             </button>
             <div className="bg-gradient-to-br from-[var(--primary)] to-[var(--accent)] p-2 rounded-lg shadow-md">
               <Sparkles className="text-white w-5 h-5" />
