@@ -1,5 +1,5 @@
 """
-Supabase Service - Session Management & Logging
+Supabase Service - Session Management & Logging with User Auth
 Handles conversation persistence and retrieval for multi-turn agent context.
 """
 
@@ -29,34 +29,69 @@ class SupabaseService:
         return self._client
     
     # =========================================================================
+    # USER PROFILE MANAGEMENT
+    # =========================================================================
+    
+    async def get_user_profile(self, user_id: str) -> Optional[Dict[str, Any]]:
+        """Get user profile by ID."""
+        try:
+            client = self.get_client()
+            result = client.table("user_profiles")\
+                .select("*")\
+                .eq("id", user_id)\
+                .single()\
+                .execute()
+            return result.data
+        except Exception as e:
+            print(f"Error getting user profile: {e}")
+            return None
+    
+    async def update_user_profile(
+        self, 
+        user_id: str, 
+        updates: Dict[str, Any]
+    ) -> bool:
+        """Update user profile."""
+        try:
+            client = self.get_client()
+            updates["updated_at"] = datetime.utcnow().isoformat()
+            client.table("user_profiles")\
+                .update(updates)\
+                .eq("id", user_id)\
+                .execute()
+            return True
+        except Exception as e:
+            print(f"Error updating user profile: {e}")
+            return False
+    
+    # =========================================================================
     # SESSION LOADING - For Agents to Access Previous Context
     # =========================================================================
     
     async def load_session_history(
         self,
         session_id: str,
+        user_id: Optional[str] = None,
         limit: int = 10
     ) -> List[Dict[str, str]]:
         """
         Load conversation history for a session.
         Returns format compatible with agent's conversation_history field.
-        
-        Args:
-            session_id: The session to load
-            limit: Max number of turns to retrieve (default 10)
-            
-        Returns:
-            List of {"role": "user"|"assistant", "content": "message"}
         """
         try:
             client = self.get_client()
             
-            result = client.table("conversation_turns")\
+            query = client.table("conversation_turns")\
                 .select("user_message, assistant_response, turn_number")\
                 .eq("session_id", session_id)\
                 .order("turn_number", desc=False)\
-                .limit(limit)\
-                .execute()
+                .limit(limit)
+            
+            # Filter by user if provided
+            if user_id:
+                query = query.eq("user_id", user_id)
+            
+            result = query.execute()
             
             if not result.data:
                 return []
@@ -81,33 +116,29 @@ class SupabaseService:
     
     async def load_session_context(
         self,
-        session_id: str
+        session_id: str,
+        user_id: Optional[str] = None
     ) -> Dict[str, Any]:
         """
         Load full session context including last state snapshots.
-        Useful for resuming a session with full agent context.
-        
-        Returns:
-            {
-                "conversation_history": [...],
-                "last_intake_profile": {...},
-                "last_financial_profile": {...},
-                "turn_count": int
-            }
         """
         try:
             client = self.get_client()
             
             # Get conversation history
-            history = await self.load_session_history(session_id, limit=20)
+            history = await self.load_session_history(session_id, user_id, limit=20)
             
             # Get the most recent turn for state info
-            latest = client.table("conversation_turns")\
+            query = client.table("conversation_turns")\
                 .select("*")\
                 .eq("session_id", session_id)\
                 .order("turn_number", desc=True)\
-                .limit(1)\
-                .execute()
+                .limit(1)
+            
+            if user_id:
+                query = query.eq("user_id", user_id)
+                
+            latest = query.execute()
             
             context = {
                 "conversation_history": history,
@@ -119,9 +150,6 @@ class SupabaseService:
             if latest.data:
                 last_turn = latest.data[0]
                 context["turn_count"] = last_turn.get("turn_number", 0)
-                
-                # If you store full state snapshots, you can retrieve them here
-                # For now we just have the basic metrics
                 context["last_intake_profile"] = {
                     "emotional_state": {
                         "anxiety": last_turn.get("intake_anxiety"),
@@ -149,14 +177,13 @@ class SupabaseService:
         limit: int = 50
     ) -> List[Dict[str, Any]]:
         """
-        Get all sessions (optionally filtered by user_id).
-        Returns summary info for session list UI.
+        Get all sessions for a user.
         """
         try:
             client = self.get_client()
             
             query = client.table("sessions")\
-                .select("session_id, first_message_at, last_message_at, total_turns, had_safety_flag")\
+                .select("session_id, first_message_at, last_message_at, total_turns, had_safety_flag, user_id")\
                 .order("last_message_at", desc=True)\
                 .limit(limit)
             
@@ -170,15 +197,23 @@ class SupabaseService:
             print(f"Error getting sessions: {e}")
             return []
     
-    async def session_exists(self, session_id: str) -> bool:
+    async def session_exists(
+        self, 
+        session_id: str,
+        user_id: Optional[str] = None
+    ) -> bool:
         """Check if a session exists in the database."""
         try:
             client = self.get_client()
-            result = client.table("conversation_turns")\
+            query = client.table("conversation_turns")\
                 .select("id")\
                 .eq("session_id", session_id)\
-                .limit(1)\
-                .execute()
+                .limit(1)
+            
+            if user_id:
+                query = query.eq("user_id", user_id)
+                
+            result = query.execute()
             return len(result.data) > 0
         except Exception:
             return False
@@ -194,7 +229,8 @@ class SupabaseService:
         user_message: str,
         assistant_response: str,
         state_snapshot: Dict[str, Any],
-        agent_logs: List[Dict[str, Any]]
+        agent_logs: List[Dict[str, Any]],
+        user_id: Optional[str] = None
     ) -> Optional[str]:
         """Log a complete conversation turn."""
         try:
@@ -218,6 +254,10 @@ class SupabaseService:
                 "created_at": datetime.utcnow().isoformat()
             }
             
+            # Add user_id if provided
+            if user_id:
+                turn_data["user_id"] = user_id
+            
             result = client.table("conversation_turns").insert(turn_data).execute()
             turn_id = result.data[0]["id"] if result.data else None
             
@@ -234,6 +274,9 @@ class SupabaseService:
                     "decision_made": log.get("thought", ""),
                     "created_at": datetime.utcnow().isoformat()
                 }
+                if user_id:
+                    log_data["user_id"] = user_id
+                    
                 client.table("agent_logs").insert(log_data).execute()
             
             return turn_id
@@ -245,19 +288,23 @@ class SupabaseService:
     async def get_session_history(
         self,
         session_id: str,
+        user_id: Optional[str] = None,
         limit: int = 50
     ) -> List[Dict[str, Any]]:
         """Retrieve full conversation history from Supabase."""
         try:
             client = self.get_client()
             
-            result = client.table("conversation_turns")\
+            query = client.table("conversation_turns")\
                 .select("*")\
                 .eq("session_id", session_id)\
                 .order("turn_number", desc=False)\
-                .limit(limit)\
-                .execute()
+                .limit(limit)
             
+            if user_id:
+                query = query.eq("user_id", user_id)
+            
+            result = query.execute()
             return result.data if result.data else []
             
         except Exception as e:
@@ -267,6 +314,7 @@ class SupabaseService:
     async def get_agent_logs(
         self,
         session_id: str,
+        user_id: Optional[str] = None,
         turn_id: Optional[str] = None
     ) -> List[Dict[str, Any]]:
         """Retrieve agent logs for a session or specific turn."""
@@ -277,11 +325,13 @@ class SupabaseService:
                 .select("*")\
                 .eq("session_id", session_id)
             
+            if user_id:
+                query = query.eq("user_id", user_id)
+            
             if turn_id:
                 query = query.eq("turn_id", turn_id)
             
             result = query.order("created_at", desc=False).execute()
-            
             return result.data if result.data else []
             
         except Exception as e:
