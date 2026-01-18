@@ -12,7 +12,6 @@ import { useChat } from '@/context/ChatContext';
 import AuthModal from './AuthModal';
 import { useAuth } from '@/contexts/AuthContext';
 
-// Types
 type AgentLog = { id: string; agentName: string; status: string; thought: string; output?: string; };
 type Message = { id: string; role: 'user' | 'assistant'; content: string; actionPlan?: any; };
 type ChatSession = { session_id: string; preview: string; last_message_at: string; created_at: string; };
@@ -69,6 +68,8 @@ export default function ChatInterface() {
         setMessages(data.history);
         setSessionId(selectedSessionId);
         setShowHistoryPanel(false);
+        // Also clear logs on new chat load
+        setAgentLogs([]);
       }
     } catch (err) {
       console.error('Failed to load chat history:', err);
@@ -78,6 +79,7 @@ export default function ChatInterface() {
   const startNewChat = () => {
     setMessages([{ id: '1', role: 'assistant', content: 'Hello. I am MindMoney. I am here to optimize your financial life. How can I help you today?' }]);
     setSessionId(`session-${Date.now()}`);
+    setAgentLogs([]);
     setShowHistoryPanel(false);
   };
 
@@ -102,21 +104,24 @@ export default function ChatInterface() {
 
       const data = await res.json();
 
-      if (data.agent_logs) {
+      // --- FIX 2: Ensure logs are parsed correctly ---
+      if (data.agent_logs && Array.isArray(data.agent_logs)) {
+        // Animate logs in
         data.agent_logs.forEach((log: any, index: number) => {
           setTimeout(() => {
             setAgentLogs(prev => [...prev, {
               id: `log-${index}`,
-              agentName: log.agent,
-              status: log.status,
+              agentName: log.agent || log.agentName, // Handle both naming conventions
+              status: log.status || 'success',
               thought: log.thought,
               output: log.output
             }]);
-          }, index * 400);
+          }, index * 300);
         });
       }
 
-      const delay = (data.agent_logs?.length || 0) * 400 + 500;
+      const delay = (data.agent_logs?.length || 0) * 300 + 500;
+      
       setTimeout(() => {
         setIsThinking(false);
         if (data.action_plan && Object.keys(data.action_plan).length > 0) {
@@ -207,7 +212,7 @@ export default function ChatInterface() {
           <div ref={messagesEndRef} />
         </div>
 
-        {/* INPUT AREA - SLIM & MODERN */}
+        {/* INPUT AREA */}
         <div className="p-4 bg-white border-t border-[var(--border)]">
           <div className="max-w-3xl mx-auto relative flex items-center gap-2">
             <div className="relative flex-1 group">
@@ -217,7 +222,7 @@ export default function ChatInterface() {
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleSend()}
                 placeholder="Type your message..."
-                className="w-full bg-[var(--neutral)] text-[var(--text-primary)] placeholder:text-[var(--text-light)]/70 border-0 rounded-full pl-5 pr-12 py-3 text-sm focus:ring-2 focus:ring-[var(--primary)]/10 focus:bg-white transition-all shadow-sm group-hover:bg-[var(--neutral-dark)]/30 focus:group-hover:bg-white"
+                className="w-full bg-[var(--neutral)] text-[var(--text-primary)] placeholder:text-[var(--text-light)]/70 border-0 rounded-full pl-5 pr-12 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/20 focus:bg-white transition-all shadow-sm group-hover:bg-[var(--neutral-dark)]/30 focus:group-hover:bg-white"
               />
               <button 
                 onClick={handleSend}
