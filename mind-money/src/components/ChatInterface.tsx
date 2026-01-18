@@ -13,9 +13,19 @@ import { useChat } from '@/context/ChatContext';
 import AuthModal from './AuthModal';
 import { useAuth } from '@/context/AuthContext';
 
-type AgentLog = { id: string; agentName: string; status: string; thought: string; output?: string; };
+type AgentLog = { 
+  id: string; 
+  agentName: string; 
+  role: string;          // New
+  status: string; 
+  thought: string; 
+  input_state: any;      // New
+  output_state: any;     // New
+  state_changes: any;    // New
+};
 type Message = { id: string; role: 'user' | 'assistant'; content: string; actionPlan?: any; };
 type ChatSession = { session_id: string; preview: string; last_message_at: string; created_at: string; };
+
 
 export default function ChatInterface() {
   const { addActionPlan } = useFinancial(); 
@@ -121,19 +131,22 @@ export default function ChatInterface() {
 
       const data = await res.json();
 
-      // --- FIX 2: Ensure logs are parsed correctly ---
+      
+      // Inside handleSend...
       if (data.agent_logs && Array.isArray(data.agent_logs)) {
-        // Animate logs in
         data.agent_logs.forEach((log: any, index: number) => {
           setTimeout(() => {
             setAgentLogs(prev => [...prev, {
-              id: `log-${index}`,
-              agentName: log.agent || log.agentName, // Handle both naming conventions
-              status: log.status || 'success',
+              id: `log-${Date.now()}-${index}`,
+              agentName: log.agent,
+              role: log.role,
+              status: log.status,
               thought: log.thought,
-              output: log.output
+              input_state: log.input_state,
+              output_state: log.output_state,
+              state_changes: log.state_changes
             }]);
-          }, index * 300);
+          }, index * 400); // Slightly slower for dramatic orchestration effect
         });
       }
 
@@ -391,38 +404,74 @@ export default function ChatInterface() {
 
       {/* RIGHT: AGENT NERVE CENTER (Collapsible) */}
       <div className={clsx(
-        "fixed inset-y-0 right-0 w-80 bg-[var(--primary-dark)] shadow-2xl transform transition-transform duration-300 ease-in-out border-l border-[var(--primary)] z-50",
+        "fixed inset-y-0 right-0 w-80 bg-white shadow-2xl transform transition-transform duration-300 ease-in-out border-l border-[var(--border)] z-50",
         showAgentPanel ? "translate-x-0" : "translate-x-full"
       )}>
-        <div className="p-4 border-b border-[var(--primary)] bg-gradient-to-r from-[var(--primary-dark)] to-[var(--primary)] flex justify-between items-center">
-          <h3 className="text-white font-mono text-xs font-bold uppercase tracking-wider">
+        <div className="p-4 border-b border-[var(--border)] bg-white flex justify-between items-center">
+          <h3 className="text-[var(--text-primary)] font-semibold text-sm uppercase tracking-wider">
             Orchestration Log
           </h3>
-          <button onClick={() => setShowAgentPanel(false)} className="text-white/70 hover:text-white">
+          <button onClick={() => setShowAgentPanel(false)} className="text-[var(--text-secondary)] hover:text-[var(--text-primary)]">
             <X size={16} />
           </button>
         </div>
         
-        <div className="p-4 space-y-3 overflow-y-auto h-[calc(100vh-60px)]">
+        <div className="p-4 space-y-4 overflow-y-auto h-[calc(100vh-60px)]">
           {agentLogs.map((log, i) => (
-            <div key={i} className="bg-white/10 rounded-lg p-3 border border-white/20 text-xs animate-in fade-in slide-in-from-right-8">
-              <div className="flex items-center gap-2 mb-2">
-                <span className={clsx("w-2 h-2 rounded-full", log.status === 'failed' ? "bg-[var(--danger)]" : "bg-[var(--success)]")} />
-                <span className="font-bold text-white">{log.agentName}</span>
+            <div key={log.id} className="bg-[var(--neutral)] rounded-lg p-3 border border-[var(--border)] animate-in fade-in slide-in-from-right-4">
+              {/* Header with Agent Name and Role */}
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  <span className={clsx("w-2 h-2 rounded-full", log.status === 'failed' ? "bg-red-500" : "bg-[var(--success)]")} />
+                  <span className="font-bold text-[var(--text-primary)] text-xs">{log.agentName}</span>
+                </div>
+                <span className="text-[10px] text-[var(--text-light)] font-medium uppercase">{log.role}</span>
               </div>
-              <p className="text-white/80 font-mono leading-relaxed opacity-80">
-                {log.thought}
+
+              {/* Thought / Reasoning */}
+              <p className="text-[var(--text-secondary)] text-xs leading-relaxed mb-3 italic">
+                "{log.thought}"
               </p>
-              {log.output && (
-                 <div className="mt-2 pt-2 border-t border-white/20 text-[10px] text-[var(--secondary-light)] font-mono truncate">
-                   Output: {log.output}
-                 </div>
-              )}
+
+              {/* State Transformation Detail */}
+              <div className="space-y-2 pt-2 border-t border-[var(--border)]">
+                {/* Changes & Routing */}
+                <div className="flex flex-wrap gap-1 mb-2">
+                  {log.state_changes?.routing && (
+                    <span className="text-[9px] bg-[var(--primary)]/10 text-[var(--primary)] px-1.5 py-0.5 rounded border border-[var(--primary)]/20 font-medium">
+                      {log.state_changes.routing}
+                    </span>
+                  )}
+                  {log.state_changes?.added?.map((key: string) => (
+                    <span key={key} className="text-[9px] bg-[var(--neutral-dark)] text-[var(--text-secondary)] px-1.5 py-0.5 rounded border border-[var(--border)]">
+                      +{key}
+                    </span>
+                  ))}
+                </div>
+
+                {/* Input/Output Comparison */}
+                <div className="grid grid-cols-1 gap-2">
+                  <div className="bg-white/50 p-2 rounded border border-[var(--border)]">
+                    <span className="text-[9px] text-[var(--text-light)] font-bold block mb-1">INPUT SNAPSHOT</span>
+                    <pre className="text-[10px] text-[var(--text-secondary)] font-mono overflow-x-auto whitespace-pre-wrap max-h-20 scrollbar-hide">
+                      {JSON.stringify(log.input_state, null, 1)}
+                    </pre>
+                  </div>
+                  
+                  <div className="bg-white/50 p-2 rounded border border-[var(--border)]">
+                    <span className="text-[9px] text-[var(--text-light)] font-bold block mb-1">OUTPUT SNAPSHOT</span>
+                    <pre className="text-[10px] text-[var(--text-primary)] font-mono overflow-x-auto whitespace-pre-wrap max-h-20 scrollbar-hide">
+                      {JSON.stringify(log.output_state, null, 1)}
+                    </pre>
+                  </div>
+                </div>
+              </div>
             </div>
           ))}
+
           {agentLogs.length === 0 && (
-            <div className="text-center text-white/50 mt-10 text-xs">
-              Systems Idle.<br/>Waiting for user input.
+            <div className="text-center text-[var(--text-light)] mt-10 text-xs">
+              Systems Idle.<br/>Waiting for orchestration...
             </div>
           )}
         </div>

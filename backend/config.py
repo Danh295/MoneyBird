@@ -16,7 +16,7 @@ class Settings(BaseSettings):
     supabase_url: str = ""
     supabase_key: str = ""
     
-    model_name: str = "gemini-2.5-flash-lite"
+    model_name: str = "gemini-2.5-flash"
     
     intake_temperature: float = 0.3
     planner_temperature: float = 0.1
